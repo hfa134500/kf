@@ -1,0 +1,2882 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客服7A训练</title>
+<style>
+:root {
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --text: #1d1d1f;
+  --text2: #86868b;
+  --text3: #aeaeb2;
+  --blue: #0071e3;
+  --blue2: #e8f0fe;
+  --green: #34c759;
+  --green2: #e8f8ed;
+  --red: #ff3b30;
+  --red2: #fce8e6;
+  --orange: #ff9500;
+  --orange2: #fff8e1;
+  --radius: 14px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; justify-content: center; align-items: center; padding: 20px;
+  -webkit-font-smoothing: antialiased;
+}
+.container {
+  max-width: 740px; width: 100%; height: calc(100vh - 40px);
+  display: flex; flex-direction: column; background: var(--card);
+  border-radius: 20px; box-shadow: var(--shadow); overflow: hidden;
+}
+.header {
+  padding: 20px 24px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+.header h1 {
+  font-size: 17px; font-weight: 600; letter-spacing: -0.2px;
+  display: flex; align-items: center; gap: 8px;
+}
+.header h1 .badge {
+  font-size: 10px; font-weight: 500; background: var(--blue2); color: var(--blue);
+  padding: 2px 10px; border-radius: 20px;
+}
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.btn-start {
+  padding: 6px 18px; border-radius: 20px; border: none; background: var(--blue); color: #fff;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+}
+.btn-start:hover { opacity: 0.85; }
+.btn-start:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-util {
+  padding: 6px 14px; border-radius: 20px; border: 1px solid #e8e8ed; background: #fff;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: var(--text);
+}
+.btn-util:hover { background: #f5f5f7; border-color: #d0d0d5; }
+.btn-util:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-util.warn:hover { background: var(--red2); border-color: var(--red); color: var(--red); }
+
+/* 加载动画 */
+@keyframes dotPulse { 0%,80%,100% { opacity: 0; } 40% { opacity: 1; } }
+.dot-pulse { display: inline-block; }
+.dot-pulse::after {
+  content: '...'; letter-spacing: 2px;
+  animation: dotPulse 1.4s infinite; animation-fill-mode: both;
+}
+
+.balance-info {
+  font-size: 10px; color: var(--green); font-weight: 500;
+  white-space: nowrap; letter-spacing: -0.1px;
+}
+
+.balance-info { color: var(--green); }
+.msg-timer-badge { display: inline-block; font-size: 11px; font-weight: 600; color: var(--text2); margin-left: 6px; padding: 0 4px; }
+.msg-timer-badge.over { color: var(--red); }
+.ref-em { color: #c41e1e; font-weight: 600; }
+
+/* ===== 场景背景卡片 ===== */
+.scenario-card {
+  display: flex; gap: 8px; padding: 8px 12px; border-radius: 10px;
+  background: linear-gradient(135deg, #e8f0fe 0%, #f0f5ff 100%);
+  border: 1px solid #c8d8f0; margin-bottom: 4px;
+  font-size: 13px; line-height: 1.5; align-self: stretch; max-width: 100%;
+}
+.scenario-card .scenario-icon { font-size: 16px; flex-shrink: 0; margin-top: 0; }
+.scenario-card .scenario-title { font-weight: 600; color: #0040a0; font-size: 11px; margin-bottom: 1px; }
+.scenario-card .scenario-body { color: #1d1d1f; font-size: 12px; }
+
+/* ===== Toast 通知 ===== */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: #323232; color: #fff; padding: 8px 18px; border-radius: 10px;
+  font-size: 12px; font-weight: 500; z-index: 9999;
+  animation: toastIn 0.25s ease, toastOut 0.25s ease 2.8s forwards;
+  max-width: 90%; text-align: center; line-height: 1.5;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-4px); } }
+
+/* ===== 设置弹窗 ===== */
+.setting-group { margin-bottom: 16px; }
+.setting-group label {
+  display: block; font-size: 12px; font-weight: 600; color: var(--text2);
+  margin-bottom: 4px; letter-spacing: -0.1px;
+}
+.setting-group input[type="password"],
+.setting-group select {
+  width: 100%; padding: 8px 12px; border: 1px solid #e8e8ed; border-radius: 10px;
+  font-size: 13px; outline: none; font-family: inherit; background: #fafafa;
+  transition: border-color 0.2s;
+}
+.setting-group input[type="password"]:focus,
+.setting-group select:focus { border-color: var(--blue); background: #fff; }
+.setting-group .hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.setting-group select { cursor: pointer; appearance: auto; }
+.setting-mode {
+  display: flex; gap: 8px; margin-bottom: 12px;
+}
+.setting-mode label {
+  flex: 1; padding: 8px; border-radius: 10px; border: 2px solid #e8e8ed;
+  text-align: center; font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s;
+}
+.setting-mode input[type="radio"] { display: none; }
+.setting-mode input[type="radio"]:checked + label {
+  border-color: var(--blue); background: var(--blue2); color: var(--blue);
+}
+/* ===== 训练配置弹窗 - 苹果风 ===== */
+.setup-section { margin-bottom: 16px; }
+.setup-label {
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase;
+}
+.setup-cards { display: flex; gap: 8px; }
+.setup-card {
+  flex: 1; padding: 10px 14px; border-radius: 12px; background: #f5f5f7;
+  text-align: center; font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all 0.2s; color: var(--text); border: 1.5px solid transparent;
+  user-select: none;
+}
+.setup-card:hover { background: #eaeaec; }
+.setup-card.active { background: var(--blue2); border-color: var(--blue); color: var(--blue); }
+.setup-card .card-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+.setup-card .card-label { font-size: 13px; font-weight: 600; }
+.setup-card .card-desc { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+.setup-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.setup-chip {
+  padding: 5px 12px; border-radius: 20px; background: #f5f5f7;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+  color: var(--text); border: 1.5px solid transparent; user-select: none;
+}
+.setup-chip:hover { background: #eaeaec; }
+.setup-chip.active { background: var(--blue2); border-color: var(--blue); color: var(--blue); }
+.setup-chip input { display: none; }
+
+.setup-start {
+  width: 100%; padding: 12px; border-radius: 12px; border: none;
+  background: var(--blue); color: #fff; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.2s; letter-spacing: -0.2px;
+}
+.setup-start:hover { opacity: 0.85; }
+
+.ai-status {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; padding: 2px 10px; border-radius: 12px;
+  margin-left: 6px; font-weight: 500;
+}
+.ai-status.on { background: var(--green2); color: #1a8a3f; }
+.ai-status.off { background: #f0f0f0; color: var(--text2); }
+
+.chat-area {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.chat-area:empty { display: flex; align-items: center; justify-content: center; }
+.chat-area:empty::after {
+  content: '点击「开始训练」随机抽取场景'; color: var(--text3); font-size: 14px; font-weight: 400;
+}
+
+.msg-group { max-width: 92%; }
+.msg-group.customer { align-self: flex-start; }
+.msg-group.agent { align-self: flex-end; }
+
+.msg-bubble {
+  padding: 10px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; letter-spacing: -0.1px;
+}
+.msg-group.customer .msg-bubble {
+  background: #f0f0f0; color: var(--text); border-bottom-left-radius: 6px;
+}
+.msg-group.agent .msg-bubble {
+  background: var(--blue2); color: var(--text); border-bottom-right-radius: 6px;
+}
+.msg-label { font-size: 11px; font-weight: 500; color: var(--text2); margin-bottom: 3px; }
+
+/* 客户下方的技巧提示 - 苹果风 */
+.msg-tip {
+  margin-top: 3px; padding: 5px 8px; border-radius: 6px;
+  background: var(--orange2); border: 1px solid #ffe8b0;
+  font-size: 10px; line-height: 1.3;
+}
+.msg-tip .tip-row { display: flex; gap: 4px; margin-bottom: 3px; }
+.msg-tip .tip-row:last-child { margin-bottom: 0; }
+.msg-tip .tip-label { font-weight: 600; color: #c06c00; white-space: nowrap; }
+.msg-tip .tip-val { color: #8a5700; }
+.msg-tip .tip-script { color: #8a5700; font-style: italic; }
+
+/* 客服下方的7A + 参考建议 */
+.msg-feedback {
+  margin-top: 3px; padding: 6px 10px; border-radius: 8px;
+  background: var(--card); border: 1px solid #e8e8ed; font-size: 11px; line-height: 1.4;
+}
+.msg-feedback .fb-row { margin-bottom: 4px; }
+.msg-feedback .fb-row:last-child { margin-bottom: 0; }
+.fb-status { font-weight: 600; font-size: 11px; }
+.fb-status.pass { color: var(--green); }
+.fb-status.fail { color: var(--red); }
+.fb-dims { display: flex; flex-wrap: wrap; gap: 3px 8px; margin-top: 2px; }
+.fb-dims .dim { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px; border-radius: 4px; font-size: 11px; }
+.fb-dims .dim.pass { background: var(--green2); color: #1a8a3f; }
+.fb-dims .dim.fail { background: var(--red2); color: #c41e1e; }
+
+.fb-ref { margin-top: 6px; padding-top: 6px; border-top: 1px solid #f0f0f0; display: flex; align-items: flex-start; gap: 4px; }
+.fb-ref .ref-label { font-weight: 600; color: var(--blue); white-space: nowrap; font-size: 11px; }
+.fb-ref .ref-text { color: var(--text2); font-size: 12px; line-height: 1.5; }
+
+/* 输入区 */
+.input-area {
+  padding: 12px 20px 16px; border-top: 1px solid #f0f0f0;
+  display: flex; gap: 8px; align-items: flex-end; background: var(--card);
+}
+.input-area textarea {
+  flex: 1; border: 1px solid #e8e8ed; border-radius: 12px; padding: 10px 16px;
+  font-size: 14px; resize: none; height: 44px; line-height: 1.5; outline: none;
+  font-family: inherit; transition: border-color 0.2s; background: #fafafa;
+}
+.input-area textarea:focus { border-color: var(--blue); background: #fff; }
+.input-area textarea::placeholder { color: var(--text3); }
+.input-area .btn-group { display: flex; gap: 6px; }
+.input-area button {
+  height: 44px; padding: 0 18px; border-radius: 12px; border: none;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+}
+.input-area button:hover { opacity: 0.85; }
+.btn-send { background: var(--blue); color: #fff; }
+.btn-send:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-end { background: #fff; color: var(--red); border: 1px solid #f0f0f0 !important; }
+.btn-end:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* 弹窗 */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+  display: flex; align-items: center; justify-content: center; z-index: 999;
+  animation: fadeIn 0.25s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal {
+  background: #fff; border-radius: 20px; width: 92%; max-width: 520px;
+  max-height: 85vh; overflow-y: auto; padding: 28px;
+  animation: slideUp 0.3s ease; box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+}
+.modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.2px; }
+.result-badge {
+  display: inline-block; padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 16px;
+}
+.result-badge.pass { background: var(--green2); color: #1a8a3f; }
+.result-badge.fail { background: var(--red2); color: #c41e1e; }
+.modal-score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.modal-score-item {
+  padding: 10px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;
+}
+.modal-score-item.pass { background: var(--green2); }
+.modal-score-item.fail { background: var(--red2); }
+.modal-score-item .name { font-size: 13px; color: var(--text); font-weight: 500; }
+.modal-score-item .threshold { font-size: 10px; color: var(--text2); }
+.modal-score-item .val { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; }
+.modal-score-item .val.pass { color: #1a8a3f; }
+.modal-score-item .val.fail { color: #c41e1e; }
+
+.modal-review h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.modal-review-item { padding: 8px 12px; border-radius: 10px; font-size: 12px; line-height: 1.6; margin-bottom: 6px; }
+.modal-review-item.good { background: var(--green2); }
+.modal-review-item.improve { background: var(--red2); }
+.modal-review-item.tip { background: #f0f0f0; }
+.modal-review-item .label { font-weight: 600; }
+
+.modal-ref { margin-top: 12px; padding: 12px 14px; background: #fafafa; border-radius: 12px; font-size: 12px; line-height: 1.6; }
+.modal-ref .ref-label { font-weight: 600; color: var(--blue); margin-bottom: 4px; }
+.modal-actions { margin-top: 16px; display: flex; gap: 8px; }
+.modal-actions button {
+  flex: 1; padding: 10px; border-radius: 12px; border: none; font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.modal-actions .btn-primary { background: var(--blue); color: #fff; }
+.modal-actions .btn-primary:hover { opacity: 0.85; }
+.modal-actions .btn-secondary { background: #f0f0f0; color: var(--text); }
+.modal-actions .btn-secondary:hover { opacity: 0.85; }
+
+.chat-area { -webkit-overflow-scrolling: touch; }
+::selection { background: var(--blue2); }
+
+/* ===== 历史记录 ===== */
+.history-list-item {
+  padding: 12px 16px; border-radius: 12px; background: #f9f9fb;
+  margin-bottom: 8px; cursor: pointer; transition: background 0.15s;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.history-list-item:hover { background: var(--blue2); }
+.history-list-item .hli-left { flex: 1; min-width: 0; }
+.history-list-item .hli-cat { font-size: 11px; color: var(--blue); font-weight: 500; }
+.history-list-item .hli-scene {
+  font-size: 13px; color: var(--text); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-list-item .hli-meta { font-size: 11px; color: var(--text2); margin-top: 3px; display: flex; gap: 12px; }
+.history-list-item .hli-badge {
+  font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 500; flex-shrink: 0;
+}
+.history-list-item .hli-badge.pass { background: var(--green2); color: #1a8a3f; }
+.history-list-item .hli-badge.fail { background: var(--red2); color: #c41e1e; }
+.history-empty { text-align: center; padding: 40px 0; color: var(--text3); font-size: 14px; }
+
+/* 详情弹窗中的对话回放 */
+.detail-chat { max-height: 340px; overflow-y: auto; padding: 8px 0; margin-bottom: 12px; }
+.detail-msg { margin-bottom: 8px; max-width: 96%; }
+.detail-msg.customer { padding-right: 20%; }
+.detail-msg.agent { padding-left: 20%; }
+.detail-msg .dm-label { font-size: 10px; font-weight: 500; color: var(--text2); margin-bottom: 2px; }
+.detail-msg .dm-bubble {
+  padding: 8px 12px; border-radius: 12px; font-size: 12px; line-height: 1.5;
+}
+.detail-msg.customer .dm-bubble { background: #f0f0f0; border-bottom-left-radius: 4px; }
+.detail-msg.agent .dm-bubble { background: var(--blue2); border-bottom-right-radius: 4px; }
+.detail-msg.agent .dm-scores {
+  display: flex; flex-wrap: wrap; gap: 2px 6px; margin-top: 3px; font-size: 10px;
+}
+.detail-msg.agent .dm-scores .dm-dim { padding: 1px 4px; border-radius: 3px; }
+.detail-msg.agent .dm-scores .dm-dim.pass { background: var(--green2); color: #1a8a3f; }
+.detail-msg.agent .dm-scores .dm-dim.fail { background: var(--red2); color: #c41e1e; }
+
+.detail-review { margin: 8px 0; }
+.detail-review-item {
+  padding: 6px 10px; border-radius: 8px; font-size: 11px; line-height: 1.5; margin-bottom: 4px;
+}
+.detail-review-item.good { background: var(--green2); }
+.detail-review-item.improve { background: var(--red2); }
+.detail-review-item.tip { background: #f0f0f0; }
+.detail-ref {
+  margin-top: 8px; padding: 8px 12px; background: #fafafa; border-radius: 10px; font-size: 11px; line-height: 1.5;
+}
+.detail-ref .ref-label { font-weight: 600; color: var(--blue); margin-bottom: 2px; }
+
+/* 清空按钮 */
+.btn-clear-history {
+  padding: 5px 12px; border-radius: 16px; border: 1px solid var(--red2); background: #fff;
+  color: var(--red); font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+.btn-clear-history:hover { background: var(--red2); }
+.history-header-bar {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+}
+.review-loading {
+  text-align: center; padding: 20px 0; color: var(--text2); font-size: 13px;
+}
+/* 情绪温度计 */
+.emotion-bar {
+  padding: 6px 20px 2px; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.emotion-track {
+  flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden;
+}
+.emotion-fill {
+  height: 100%; border-radius: 3px; background: linear-gradient(90deg, #ff3b30, #ff9500, #34c759);
+  transition: width 0.5s ease;
+}
+.emotion-label { font-size: 11px; font-weight: 500; color: var(--text2); white-space: nowrap; }
+/* 发送前预评分 */
+.preview-area {
+  padding: 6px 20px 0; display: flex; flex-direction: column; gap: 2px;
+  border-top: 1px solid #f0f0f0; min-height: 0;
+}
+.preview-dims {
+  display: flex; flex-wrap: wrap; gap: 2px 6px; font-size: 10px;
+}
+.preview-dims .pd-item {
+  padding: 1px 6px; border-radius: 4px; font-weight: 500;
+}
+.preview-dims .pd-item.pass { background: var(--green2); color: #1a8a3f; }
+.preview-dims .pd-item.fail { background: var(--red2); color: #c41e1e; }
+.preview-tip { font-size: 10px; color: var(--text3); line-height: 1.4; }
+/* 薄弱项按钮 */
+.btn-weakness {
+  width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e8e8ed;
+  background: #fff; font-size: 14px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: all 0.2s;
+  line-height: 1; padding: 0;
+}
+.btn-weakness:hover { background: #f5f5f7; border-color: #d0d0d5; }
+.btn-weakness:disabled { opacity: 0.3; cursor: not-allowed; }
+
+
+@media (max-width: 520px) {
+  body { padding: 0; -webkit-text-size-adjust: 100%; }
+  .container { height: 100vh; border-radius: 0; }
+  .container { min-height: -webkit-fill-available; }
+  .modal { width: 100%; max-height: 100vh; border-radius: 0; }
+  .modal { max-height: -webkit-fill-available; }
+  /* 移动端 header：双行紧凑布局 */
+  .header {
+    padding: 10px 12px 8px; flex-wrap: wrap; gap: 4px;
+    flex-direction: column; align-items: stretch;
+  }
+  .header h1 {
+    font-size: 14px; gap: 4px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header h1 .badge { display: none; }
+  .header-right {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 4px; flex-wrap: nowrap; width: 100%;
+  }
+
+
+
+  .btn-swap { font-size: 11px; padding: 3px 8px; border-radius: 14px; width: auto; height: auto; }
+  .btn-start { font-size: 11px; padding: 4px 12px; white-space: nowrap; }
+
+  .chat-area { padding: 10px 12px; }
+  .input-area { padding: 8px 10px 12px; }
+
+  .input-area textarea { font-size: 16px; height: 44px; }
+  .input-area button { height: 44px; padding: 0 14px; font-size: 12px; }
+  .msg-group { max-width: 96%; }
+  .msg-bubble { font-size: 15px; padding: 8px 12px; }
+  .emotion-bar { padding: 4px 12px 0; }
+  .emotion-label { font-size: 10px; }
+  .preview-area { padding: 4px 12px 0; }
+  .preview-dims { font-size: 9px; }
+  .msg-tip { font-size: 9px; padding: 4px 6px; }
+  .msg-feedback { font-size: 10px; padding: 5px 8px; }
+  /* 设置弹窗：全屏可滚动 */
+  .modal { padding: 24px 16px; }
+  .setup-chip { font-size: 11px; padding: 4px 10px; }
+  .setup-card { padding: 8px 10px; }
+  .setup-card .card-icon { font-size: 16px; }
+  .setup-card .card-label { font-size: 12px; }
+  .modal h2 { font-size: 16px; }
+  .btn-util { font-size: 11px; padding: 3px 10px; }
+  /* 场景卡片精简 */
+  .scenario-card { padding: 6px 10px; font-size: 11px; gap: 4px; }
+  .scenario-card .scenario-icon { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🧑‍💼 客服训练 <span class="ai-status off" id="aiStatus">本地模式</span></h1>
+    <div class="header-right">
+      <span class="balance-info" id="balanceDisplay" title="点击刷新余额" onclick="fetchBalance()" style="cursor:pointer;"></span>
+      <button class="btn-util warn" id="btnClearCache" onclick="clearAllData()">清除缓存</button>
+      <button class="btn-util" id="btnSetting" onclick="showSettings()">⚙️设置</button>
+      <button class="btn-util" id="btnHistory" onclick="showHistory()">📋历史</button>
+      <button class="btn-util" id="btnDashboard" onclick="showDashboard()">📊数据</button>
+      <button class="btn-start" id="btnStart" onclick="showTrainingSetup()">🚀 开始训练</button>
+    </div>
+  </div>
+  <!-- 情绪温度计 -->
+  <div class="emotion-bar" id="emotionBar" style="display:none;">
+    <div class="emotion-track">
+      <div class="emotion-fill" id="emotionFill" style="width:50%;"></div>
+    </div>
+    <div class="emotion-label" id="emotionLabel">等待训练…</div>
+  </div>
+  <div class="chat-area" id="chatArea"></div>
+  <!-- 发送前预评分 -->
+  <div class="preview-area" id="previewArea" style="display:none;">
+    <div class="preview-dims" id="previewDims"></div>
+    <div class="preview-tip" id="previewTip"></div>
+  </div>
+  <div class="input-area">
+    <textarea id="agentInput" placeholder="输入回复…" disabled></textarea>
+    <div class="btn-group">
+      <button class="btn-end" id="btnEnd" disabled onclick="endSession()">结束</button>
+      <button class="btn-send" id="btnSend" disabled onclick="sendReply()">发送</button>
+    </div>
+  </div>
+</div>
+<div id="modalContainer"></div>
+
+<script>
+// ============ 100个场景 ============
+const SCENES = [
+  '什么时候发货，已经下单两天了还没动静',
+  '发货后一般多久能到，能不能给个准信',
+  '能发顺丰快递吗，我加钱也可以',
+  '为什么还没发货，不是说好24小时内发吗',
+  '为什么没有物流信息，发货一天了查不到',
+  '包裹到哪里了，帮我查一下最新的物流位置',
+  '物流信息好几天不更新了，卡在半路了',
+  '物流显示异常怎么办，一直显示退回中',
+  '快递不送货上门，让我自己去驿站拿',
+  '未经同意就放代收点了，我家里有人的',
+  '快递说超区不送，让我自取太远了',
+  '快递员态度特别差，我要投诉他',
+  '显示签收但我根本没收到，东西去哪儿了',
+  '没收到取件码，快递柜打不开',
+  '包裹被退回了，能帮我重新发吗',
+  '能重新派送吗，改送到家里地址',
+  '包裹收到了但外包装都破了，里面东西还能用吗',
+  '少件了，买三件只收到两件',
+  '发错货了，我买的是黑色收到的是白色',
+  '包裹丢了，两个多月了还没找到',
+  '收到商品外包装都破了里面的东西还能用吗',
+  '买的一箱啤酒碎了3瓶箱子都湿透了',
+  '东西有裂纹划痕明显不是全新的',
+  '食品发霉变质了你们怎么处理的',
+  '真空包装漏气了还能不能吃',
+  '玻璃瓶碎了汤水洒了一箱子',
+  '商品被挤压变形了包装也不结实',
+  '饮料瓶子瘪了怀疑是二次销售',
+  '收到发现盒子有被拆过的痕迹',
+  '商品缺了一个角运输也太暴力了',
+  '密封包装有破损不敢用了',
+  '水果收到烂了一半全扔了',
+  '塑料外壳都裂了这怎么用',
+  '包装盒都压扁了送人完全拿不出手',
+  '瓷器碎了包装就塞了两张报纸根本不行',
+  '商品表面有划痕刮伤，影响美观了',
+  '颜色跟图片完全不一样，色差太大了',
+  '打开有刺鼻异味，不敢用',
+  '外包装压扁了，里面东西不知道坏了没',
+  '开线脱线了，缝制部位线头都掉了',
+  '材质跟详情页说的完全不一样',
+  '洗了一次就起球了，这质量不行',
+  '穿了两天就掉皮掉色了',
+  '尺寸偏大/偏小，跟标的完全对不上',
+  '码数不准，穿不了',
+  '重量明显不够，缺斤少两了',
+  '规格参数跟页面写的不一样',
+  '无法正常开机，按了没反应',
+  '宣传说有这个功能实际根本没有',
+  '电池续航太短，半天就没电了',
+  '充不进去电，换了线也不行',
+  '保质期只剩一个月了这也叫新鲜',
+  '包装漏气了，里面的东西还能吃吗',
+  '打开发现里面发霉变质了',
+  '怀疑是假货，跟专柜买的不一样',
+  '为什么我的商品不支持7天无理由退换',
+  '超过7天还能退货吗，质量有问题',
+  '赠品需要一起退回去吗',
+  '发票丢了还能退换货吗',
+  '怎么申请退换货，操作步骤是什么',
+  '退款什么时候能到账，已经好几天了',
+  '退换货申请被拒绝了怎么办',
+  '退换货可以换其他款式吗',
+  '退换货运费谁承担，不是我问题',
+  '质量问题退货要付运费吗',
+  '无理由退货运费怎么算的',
+  '运费险怎么用，赔多少',
+  '内衣类商品能退换吗，没穿过',
+  '数码产品激活了还能退吗',
+  '食品刚收到发现过期了能退吗',
+  '这个不会安装有没有安装视频',
+  '说48小时回复还没人联系我',
+  '换个客服又要我重复说一遍',
+  '聊着聊着就不见了每次都要重新找人',
+  '到底有没有人工客服感觉是机器人',
+  '刚下单就想改地址改不了',
+  '退款了红包优惠券还能退回来吗',
+  '你们承诺的东西哪里体现了',
+  '客服之前说的换个客服就不认了',
+  '密码忘了找不回来你们能不能帮忙',
+  'APP上操作不了能不能帮我后台操作',
+  '你们系统太差了老是报错',
+  '如何查询当地的国补政策，有哪些途径',
+  '每人可以领取几次国补，有次数限制吗',
+  '国补资格可以转让给别人用吗',
+  '国补的补贴比例是多少，按什么标准',
+  '最高补贴金额上限是多少钱',
+  '不同商品的补贴标准是一样的吗',
+  '国补可以和其他优惠券叠加使用吗',
+  '国补支持哪些支付方式，可以用花呗吗',
+  '为什么下单时看不到补贴金额显示',
+  '使用国补买的商品可以退货吗',
+  '退货后国补资格会返还吗',
+  '国补商品退货退款金额怎么计算',
+  '家电以旧换新补贴怎么申请',
+  '数码产品国补有什么特殊要求吗',
+  '6000元以上的手机能享受国补吗',
+  '国补商品需要当场激活验货吗',
+  '国补可以分期付款吗',
+  '国补和地方补贴可以一起用吗',
+  '这个商品保质期多久，生产日期是什么时候',
+  '这个商品的规格、大小、重量能帮我确认一下吗',
+  '这个商品配件可以单独买吗，哪里能买到',
+  '各品牌方的售后联系方式是什么，能提供一下吗',
+  '这个商品有全国联保吗，保修期多久',
+  '商品条形码扫出来怎么是无关的物流信息',
+  '这个商品的配料表和营养成分表能发我一下吗',
+  '这个商品产地在哪里，供应商信息能提供吗',
+  '这个商品有好几个颜色和型号，怎么选择合适',
+  '水果买回来怎么催熟，有没有什么方法',
+  '这个口味的和另一个口味有什么区别',
+  '商品的最小单元生产日期说明是什么样的'
+];
+
+const CUSTOMER_REPLIES = {
+  angry: [
+    '你们这服务也太差了吧，每次都是这样敷衍我',
+    '我不要听解释，你直接说怎么办，别说废话',
+    '算了我不想跟你说了，你找能处理的人来',
+    '你们上次也这么说的结果根本没做到，我凭什么信你',
+    '我拍不了照片，这是你们的问题不是我的问题',
+    '你们是不是就只会说抱歉不会干活？有没有点实际行动',
+    '你这个方案我不接受，太敷衍了，拿我当傻子呢',
+    '你说的话能代表你们公司吗？不能的话叫你们经理来',
+    '我不管你们有什么困难，我要的是解决问题',
+    '你说了半天到底能不能处理？不能就别浪费我时间',
+    '你们公司就是店大欺客是吧，欺负我们消费者',
+    '我要投诉到12315，你们等着吧',
+    '这已经不是我第一次遇到问题了，你们到底行不行',
+    '你这个人怎么跟机器人一样，能不能有点人情味',
+    '你说帮我申请？上次也这么说然后就没然后了',
+    '我不管什么规定，你们自己搞错的事情凭什么让我承担',
+    '你们客服是不是换个马甲就换个人？每次说法都不一样',
+    '我要求现在就解决，一分钟都不想等',
+    '你们就这个态度？我要曝光到网上让大家都看看',
+    '你工号多少？我要投诉你'
+  ],
+  calm: [
+    '行吧那你尽快处理别让我等太久',
+    '好我等你的结果，希望这次说话算话',
+    '那就这样处理吧，反正我也懒得折腾了',
+    '照片发你了你看一下',
+    '嗯那你帮我看一下吧',
+    '好吧我自己再试试不行再来找你们',
+    '行那就按你说的办吧，希望这次靠谱'
+  ],
+  question: [
+    '那你告诉我具体什么时候能处理完',
+    '这个方案还有其他选择吗',
+    '你们之前也那么说的结果没做到，这次凭什么信你',
+    '如果还是处理不好我该怎么办',
+    '你说帮我申请大概能到什么程度',
+    '我的时间就不是时间吗？耽误了谁负责',
+    '你说得好听，到时候又变卦了怎么办',
+    '那我的损失谁来承担？就一句抱歉就完了？'
+  ]
+};
+
+const REFERENCE_BY_CAT = {
+  '物流配送': '确实让您<span class="ref-em">着急</span>了，这事儿换谁等了半天心里都不<span class="ref-em">痛快</span>。我先去核实包裹到哪儿了，查清了给您信儿，您看成吗？',
+  '商品破损': '确实让您<span class="ref-em">生气</span>了，这事儿换谁收到好东西发现是破的心里都不<span class="ref-em">痛快</span>。方便拍个照发我吗？我帮您申请方案，您看行吗？',
+  '商品质量': '确实让您<span class="ref-em">失望</span>了，这事儿换谁花钱买到不满意的心里都不<span class="ref-em">舒服</span>。方便拍个照吗？我帮您处理，您看行吗？',
+  '退换货': '确实让您<span class="ref-em">困扰</span>了，这事儿换谁想退货搞不清流程也挺<span class="ref-em">麻烦</span>。我直接帮您提交申请，您选上门取件就行，您看行吗？',
+  '安装使用': '确实让您<span class="ref-em">烦心</span>了，这事儿换谁买回来发现搞不定心里都不<span class="ref-em">痛快</span>。我来帮您看看怎么处理，您看成吗？',
+  '价格活动': '确实让您<span class="ref-em">郁闷</span>了，这事儿换谁刚买完就降价心里都不<span class="ref-em">舒服</span>。我帮您核实一下，您看成吗？',
+  '反馈': '确实让您<span class="ref-em">困扰</span>了，这个问题我这边暂时无法直接确认，我先帮您反馈给售后团队，48小时内一定给您一个具体的回复，您看行吗？'
+};
+
+const TECHNIQUES = {
+  '物流配送': [
+    { label: '情绪词先行', script: '确实让您着急了，这事儿换谁等了半天没到…' },
+    { label: '给具体时效', script: '我先查一下包裹到哪了，几分钟后给您回复' },
+    { label: '主动补偿', script: '晚到我帮您申请体验补偿，不让您白等' }
+  ],
+  '商品破损': [
+    { label: '先道歉再处理', script: '是我们的问题，我先跟您道个歉。方便拍个照吗？' },
+    { label: '给选择权', script: '您看是想补发还是退款？两种我都帮您安排' },
+    { label: '主动兜底', script: '运费我们出，您选上门取件就行，不用自己折腾' }
+  ],
+  '商品质量': [
+    { label: '共情+凭证', script: '确实让您失望了，方便拍个照发我吗？我帮您去申请方案' },
+    { label: '站在客户一边', script: '这事儿换我心里也不舒服，我一定帮您争取' },
+    { label: '给安全感', script: '您放心，这个情况我帮您跟进到底' }
+  ],
+  '退换货': [
+    { label: '代客操作', script: '我直接帮您提交申请，您不用自己操作' },
+    { label: '说清时效', script: '退货收到后24小时内退款到账，您注意查收' },
+    { label: '费用承担', script: '退货运费我们出，您选上门取件就行' }
+  ],
+  '安装使用': [
+    { label: '先接情绪', script: '确实让您烦心了，买回来发现装不上换谁都不痛快' },
+    { label: '给具体路径', script: '我来帮您找安装视频/联系安装师傅，您看成吗' },
+    { label: '不推诿', script: '是我们的页面没写清楚，我直接帮您解决' }
+  ],
+  '价格活动': [
+    { label: '先理解不辩解', script: '确实让您郁闷了，这事儿换谁心里都不舒服' },
+    { label: '核实后回复', script: '我帮您核实一下价格政策，查清楚了给您方案' },
+    { label: '争取补偿', script: '差价补不了的话我帮您申请其他方式补偿' }
+  ]
+};
+
+const THRESHOLDS = {
+  serviceAttitude: 7, emotionMgmt: 6, commAbility: 6,
+  responseSpeed: 7, bizAbility: 6, problemSolved: 6, userSatisfied: 6
+};
+const SAT_LEVELS = ['很满意','满意','一般','不满意'];
+const SAT_EMOJIS = { '很满意':'😍','满意':'😊','一般':'😐','不满意':'😠' };
+
+// 售后核心规则（注入 AI 评估参考）
+const RULES = `【消费者售后总则】
+一、受理规则
+1. 售后申请时效：交易成功后15天内提出
+2. 7天无理由退货：签收次日零时起168小时内（满168小时为7天），商品完好可退
+3. 15天换货：质量问题15天内可换（无换货能力则支持退货）
+4. 签收时间认定：以第三方物流显示的实际到货日期为准
+5. 不支持无理由退货（9类）：定制、鲜活易腐、音像/软件(拆封)、报刊、服务、个人闲置、二手/竞拍、人体用药
+6. 卖家可选支持无理由：激活后价值贬损(智能商品/商用厨电/黄金等)、拆封影响安全/品质(食品/保健品/贴身用品/成人用品/酒水等)
+7. 必须支持无理由：除以上10类外的所有品类（服装/数码/家纺/母婴/图书/家具/家电等）
+
+二、审核规则
+6. 审核时效：提交后48小时内审核，超时默认同意
+7. 拒绝后可修改：5天(120小时)内可修改退款申请重新审核
+8. 质量问题（肉眼可见）：需提供凭证，平台认定后支持退货退款，可折价
+9. 假冒商品：需提供质检凭证或其他有效凭证
+10. 性能故障（肉眼不可见）：需厂家指定售后检测报告，当地无检测条件平台可配合
+11. 平台要求送检→检测费平台承担；消费者自行送检→检测费自理
+
+三、描述不当与表面不一致
+12. 描述不当（肉眼可见）：需提供凭证，平台认定后支持退货退款
+13. 描述不当（肉眼不可见）：参照质量问题处理
+14. 表面不一致：当场检视→拍照拒签；签收后发现→当日申请并提供凭证
+
+四、七天无理由完好标准
+15. 通用完好：配件/吊牌/说明书齐全，无受损、受污、刮防伪、激活，无不合理使用痕迹；基于查验打开包装不影响完好
+16. 包装要求：原包装（最小销售单元）未缺失，结构完整；适度的变形/污渍/局部破损不认定为不影响完好的包装完整；若包装有防伪性/收藏价值等特殊附加价值且卖家事前显著明示，买家需积极保护，未明示则按一般标准
+17. 特殊完好标准（分品类）：
+- 食品/保健品/酒水/茶叶/奶粉：一次性密封包装未拆封
+- 化妆品/洗护/个人护理：一次性密封包装未拆封
+- 母婴/尿片：一次性密封包装未拆封
+- 贴身衣物/泳衣：裆部保护贴完好；内衣密封未拆封
+- 服装鞋帽：防盗扣/防损扣不可剪毁；无显著穿戴/洗涤/化妆品痕迹
+- 数码3C：未激活/未通电使用/无个人数据；相机未摁快门；电脑未激活系统；手机进网许可证完好
+- 家电：液晶电视/空调可简单通电调试，不得上墙安装；洗衣机不得过水
+- 珠宝黄金：鉴定证书完整无污染；标签牌完整
+- 图书音像：一次性密封未拆封；书籍无折痕/水渍/污损/字迹
+- 医疗器械/计生/成人：一次性密封包装未拆封
+- 玩具/手办：内包装胶条/塑封不可拆
+18. 赠品/发票：赠品遗失或破损做折价处理，发票遗失客户承担税款
+19. 邮费：包邮商品→买家承担退回运费；未包邮/附条件包邮→部分退货致使不满足包邮条件→买家承担所有邮费
+
+五、退货规范
+21. 退货地址：默认地址正确，如需指定需征得消费者同意
+22. 退货期限：双方达成协议后系统规定时间内退货，超时关闭申请
+23. 退货方式：上门取件或自行寄出，其他方式需协商一致
+24. 自行寄出：及时填写承运单号，未告知单号平台可拒收
+25. 到付退货：需事先征得平台同意，否则风险自担
+26. 风险转移：质量问题/描述不当/签收破损→交付承运人后风险由平台承担
+
+六、退货运费
+27. 7天无理由退货/无理由拒签：运费由消费者承担
+28. 非消费者原因退换货（质量问题/描述不当等）：运费由平台承担
+29. 未经同意到付导致拒收→二次运费由消费者承担
+30. 退货地址与发货地不一致导致运费差额→平台承担差额
+
+七、仓库收货与退款
+31. 仓库不得无理由拒收，不合理拒收成本由平台承担
+32. 数量一致+符合退货→退款；数量差异→协商折价；不符合退货→折价或原返
+33. 退货商品与申请描述不符或价值贬损较大→原返后拒绝申请
+34. 上传快递单号后超审核时效未处理→默认同意退款
+35. 退货扣减：需扣除买返赠金及已使用优惠
+36. 赠品未退回→扣除赠品金额折价退款
+
+【临期商品规则】
+保质期≥1080天 → 临保期180天
+730≤保质期<1080天 → 临保期150天
+365≤保质期<730天 → 临保期90天
+180≤保质期<365天 → 临保期60天
+90≤保质期<180天 → 临保期1/3保质期(至多40天)
+30≤保质期<90天 → 临保期1/3保质期(至多20天)
+15≤保质期<30天 → 临保期1/2保质期(至多10天)
+6≤保质期<15天 → 临保期1/2保质期(至多5天)
+3≤保质期<6天 → 临保期1/2保质期
+
+【送货上门规则】
+1. 服务范围：订单详情页标有"送货上门"标识的商品，配送到收货地址
+2. 上门认定：本人签收/他人代签收/经沟通放指定位置（家门口、前台、门卫、驿站、自提柜等），均视为已上门
+3. 可不送货上门场景：学校/医院/军队/景区/党政机关/海关监管区等配送员无法进入区域；收货人不方便约定放其他地址；因消费者原因（电话地址不准确、无人签收）导致无法上门；不可抗力（自然灾害、恶劣天气、交通管制、传染病等）
+4. 投诉时效：签收或代收后7个自然日内发起"未上门"投诉
+5. 补偿标准：未经同意擅自放代收点→10元/单（以平台赠金形式发放，非现金）
+6. 不予补偿：符合可不送货上门场景的、恶意购买/恶意维权的、已获得过补偿的
+
+【晚必赔规则】
+一、服务标识
+1. 晚发必赔：今日发/24小时发/48小时发/预售，未按约定时间发货→可赔付
+2. 晚到必赔：闪购4小时达/次日达，未按约定时间送达→可赔付
+
+二、服务时效
+3. 申请时间：签收7天内且未确认收货前，订单非关闭状态
+4. 审核确认：发起后24小时内完成赔付处理
+5. 补偿形式：平台体验保障金（赠金形式，非现金）
+
+三、赔付标准
+6. 晚发必赔—24小时/今日发：赔付1%（3-30元）
+7. 晚发必赔—48小时：赔付5%（5-50元）
+8. 晚发必赔—预售：赔付10%（5-50元）
+9. 晚到必赔—闪购4小时达：10元
+10. 晚到必赔—当日达≤48小时：10元
+11. 晚到必赔—当日达48-72小时：15元
+12. 晚到必赔—当日达＞72小时：20元
+13. 晚到必赔—次隔日达≤48小时：5元
+14. 晚到必赔—次隔日达48-72小时：10元
+15. 晚到必赔—次隔日达＞72小时：20元
+16. 每笔订单时效类违约只赔付一次，同时多次违约取最高标准
+
+四、不予赔付情形
+17. 消费者原因（电话/地址不准确、联系不上、无人签收、约定改时）
+18. 不可抗力（火灾、系统异常、高温/雨雪/台风、大促旺季、春节等）
+19. 订单金额＜10元（含运费）不生效
+20. 签收＞7天或已确认收货→服务失效
+21. 恶意退货/拒收/索赔、虚假交易等违规行为不享受服务
+
+【退货运费险规则】
+1. 适用对象：非88VIP用户购买带"退货运费险"标识商品
+2. 申请时效：平台发货后90天内发起售后退货退款/上门换新
+3. 7天无理由退货：免首重运费，超出首重自行承担；自行寄回→先垫付，退款完成后72小时赔付到账
+4. 非7天无理由退货：平台承担退回运费；上门取件→无需付费；自行寄回→先垫付，退款完成后72小时赔付首重，超重部分咨询客服报销
+5. 到付退货：未事先征得平台同意→平台有权拒收并拒绝报销，二次运费自行承担
+6. 同一物流单号多次申请→不予赔付
+7. 虚报/乱报运费（明显高于市场价）→不予赔付
+8. 滥用服务/恶意退货/蓄意牟利→取消资格并撤销已获利益
+
+【物流时效管理规范】
+一、发货时效
+1. 普通商品：付款后48小时内发货
+2. 全款预售/定金预售：设定发货时间内发货
+3. 定制及其他另行约定：约定时间内发货
+4. 周期购商品：约定发货日23:59:59前
+5. 发货认定标准：物流公司回传"已揽收/揽件"；菜鸟显示"包裹已出库"后四种状态之一；大件商品以物流底单时间为准
+
+二、延迟发货
+6. 普通商品延迟：赔付5%（5-50元）
+7. 全款预售/定金预售(＞48h)/定制(＞48h)延迟：赔付10%（5-50元）
+8. 定金预售(48h)/定制(48h)/周期购/其他延迟：赔付5%（5-50元）
+9. 延迟发货情节严重且投诉成立→每次扣1分（30天累计≤6分）
+
+三、缺货
+10. 延迟发货后72小时仍未发货/商家承认缺货/物流轨迹超时后5天未收到→认定为缺货
+11. 承诺发货≤48h缺货：赔付10%（5-500元）
+12. 承诺发货＞48h缺货：赔付15%（5-500元）；承诺时效内自认缺货→赔付10%
+
+四、虚假发货
+13. 上传单号后24小时无揽收记录→赔付5%（5-100元）
+14. 实际发货与所购无关/空包裹/重复物流单号→赔付30%（5-500元）
+15. 虚假发货严重→下架商品、限制发布、删除商品
+
+五、物流轨迹超时
+16. 已揽收后24小时无更新→超时
+17. 物流停滞超时标准：同城/同省＞48h；跨省（除偏远）＞72h；新疆/西藏/青海/宁夏/甘肃/内蒙古＞120h
+18. 轨迹超时→赔付5%（5-50元）
+
+六、物流轨迹异常
+19. 已揽收后72小时无更新/轨迹与收货地址不符/未经同意退回/轨迹造假→异常
+20. 物流停滞异常标准：同城/同省≥96h；跨省（除偏远）≥120h；新疆/西藏/青海/宁夏/甘肃/内蒙古≥168h
+21. 轨迹异常→赔付20%（5-100元）
+
+七、赔付上限
+22. 同一买卖双方同日内多笔交易合并计算最高500元
+23. 轨迹超时+轨迹异常合并赔付比例最高20%，金额最高100元
+
+八、免责情形
+24. 消费者滥用会员权利/非生活消费购买/不可抗力/地址无效/商品涉嫌违法违规等
+
+【纸尿裤红屁屁包退规则】
+1. 服务标识：商品带有"红屁屁包退"标识
+2. 保障时效：签收之日起60天内（次日零时起算，满1440小时）
+3. 发起原因：使用后出现尿布疹（红屁股/红肿/颗粒/结痂等）
+4. 有效凭证：尿布疹部位照片，未经涂改/增删/编辑
+5. 响应时效：24小时内有效响应维权申请，超时默认达成
+6. 退货运费：商家承担
+7. 赔付标准：未履行→赔付实付金额30%（最低5元，最高100元）红包
+8. 仅退款条件：实付≤10元→仅退款（无需退货）
+9. 退货退款：实付＞10元→退货退款，已拆封也需退回（保证干净无污染）
+10. 拆封限制：多包商品最多拆封1包，使用比例不超过50%（仅正装，赠品/试用装除外）
+11. 不可抗力：大促/节假日响应时效可延长
+12. 蓄意牟利：取消资格并影响信誉评级
+
+【不新鲜包退规则】
+1. 适用商品：带"不新鲜包退"标识的低温乳制品等
+2. 轻微不新鲜→退问题商品实付金额30%；严重不新鲜→退100%
+3. 轻微/严重标准：保质期45-60天→剩余＜30天/＜15天；30-45天→＜20天/＜10天；25-30天→＜16天/＜8天；21-25天→＜14天/＜7天；18-21天→＜12天/＜6天；15-18天→＜10天/＜5天；7-15天→＜4天/＜2天
+4. 退款计算：按最小销售单元计算，多种规格以声明价值为准
+5. 签收认定：物流签收记录为准；无物流节点发货后3天视为签收
+6. 供应商未履约→赔付实付30%（5-100元）
+7. 保质期计算：有效期截止日-生产日+1天；剩余保质期=到期日-签收日+1天
+
+【隐私发货规则】
+1. 适用商品：带"隐私发货"标识商品
+2. 发货要求：快递包裹外包装及物流面单表面无商品信息（商品标题/通用名/疗效等）
+3. 未履约→赔付实付5%（5-50元）
+
+【破损包退规则】
+1. 适用商品：带"破损包退"标识商品（破损/漏液/变形/少件/包装破损/胀气/脏污等）
+2. 响应时效：24小时内响应
+3. 全额退款：主商品破损/变形/少件影响整体使用无剩余价值
+4. 比例退款：破损10%以内→退10%；10%-50%→退50%；50%以上→退100%
+5. 液态食品漏液：单件漏液按1件破损计算；污染其他商品按污染部分算
+6. 包装脏污不影响使用→按实际价值10%退款
+7. 申请时效：食品类签收后24小时内；其他商品签收后72小时内
+8. 需提供凭证：商品问题细节实拍，未经涂改编辑
+9. 退货运费：平台承担；无退货价值不强制寄回
+10. 平台未履行→赔付应退金额20%（5-50元）
+11. 签收认定：物流签收记录为准；无物流节点发货5天后视为签收
+12. 消费者使用/保管不当导致破损→不赔付
+13. 不可抗力/大促节假日→时效可延长
+14. 蓄意牟利→取消资格
+
+【超市运费规则】
+一、大陆地区
+1. 实付＜50元→5kg内6元，超出1元/kg
+2. 50元≤实付＜88元→21kg内5元，超出1元/kg
+3. 88元≤实付＜200元→21kg内免费，超出1元/kg
+4. 200元≤实付＜300元→21kg内免费，超出1元/kg
+5. 300元≤实付＜400元→30kg内免费，超出1元/kg
+6. 400元≤实付＜500元→40kg内免费，超出1元/kg
+7. 实付≥500元→50kg内免费，超出1元/kg
+8. 实付金额=扣除88VIP折扣/购物券/优惠券/福袋红包/立减后的金额
+9. 多笔订单不可合并计算运费
+10. 闪购店：实付＜58元→15kg内6元；实付≥58元→15kg内免费；超出1元/kg
+11. 虚拟卡券不参与运费计算
+
+二、香港地区
+12. 自提：0-1kg收费13元，超出1元/kg（RMB）
+13. 宅配上门：0-1kg收费37元，超出3元/kg（RMB）
+14. 宅配二次派送：因客户原因2次派送失败→上架等待联系；再次派送收取相同运费，之后2次免费
+15. 自提超期费：到店后免费保管3天，超出HKD5/天/包裹`;
+
+const DIM_NAMES = [
+  { k: 'serviceAttitude', n: '服务态度' }, { k: 'emotionMgmt', n: '情绪管理' },
+  { k: 'commAbility', n: '沟通能力' }, { k: 'responseSpeed', n: '响应速度' },
+  { k: 'bizAbility', n: '业务能力' }, { k: 'problemSolved', n: '问题解决' },
+  { k: 'userSatisfied', n: '用户满意' }
+];
+
+// ============ AI 配置 ============
+// 默认 Mimo 模型
+const AI_CONFIG = {
+  apiKey: localStorage.getItem('dsApiKey') || 'sk-ckp8n75kawfbxewhbtlraqpedsgnhw1a3ssqp46oidq6u42f',
+  model: localStorage.getItem('dsModel') || 'deepseek-v4-flash',
+  aiMode: localStorage.getItem('dsAiMode') !== 'off',
+  provider: localStorage.getItem('aiProvider') || 'mimo',
+  mimoModel: localStorage.getItem('mimoModel') || 'mimo-v2-flash',
+  baseUrl: 'https://api.deepseek.com'
+};
+
+function getBaseUrl() { return AI_CONFIG.provider === 'mimo' ? 'https://api.xiaomimimo.com/v1' : 'https://api.deepseek.com'; }
+function getModelName() { return AI_CONFIG.provider === 'mimo' ? AI_CONFIG.mimoModel : AI_CONFIG.model; }
+
+function saveAiConfig() {
+  localStorage.setItem('dsApiKey', AI_CONFIG.apiKey);
+  localStorage.setItem('dsModel', AI_CONFIG.model);
+  localStorage.setItem('dsAiMode', AI_CONFIG.aiMode ? 'on' : 'off');
+  localStorage.setItem('aiProvider', AI_CONFIG.provider);
+  localStorage.setItem('mimoModel', AI_CONFIG.mimoModel);
+}
+
+function isAiMode() { return AI_CONFIG.aiMode && AI_CONFIG.apiKey.length > 0; }
+
+function updateAiStatus() {
+  const el = document.getElementById('aiStatus');
+  if (!el) return;
+  const on = isAiMode();
+  const label = AI_CONFIG.provider === 'mimo' ? 'Mimo' : 'AI';
+  el.textContent = on ? label + ' 已开启' : '本地模式';
+  el.className = 'ai-status ' + (on ? 'on' : 'off');
+}
+
+let state = {
+  scene: null, cat: '', msgs: [], round: 0, active: false, ended: false, heat: 0,
+  acc: { serviceAttitude: [], emotionMgmt: [], commAbility: [], responseSpeed: [], bizAbility: [], problemSolved: [], userSatisfied: [] },
+  satisfactions: [], scenarioDetail: '', difficulty: localStorage.getItem('csDifficulty') || 'hard', focusDims: [],
+  swapMode: localStorage.getItem('csSwapMode') === 'true',
+  continuousTotal: 0, continuousRound: 0
+};
+
+function setDifficulty(val) {
+  state.difficulty = val;
+  localStorage.setItem('csDifficulty', val);
+}
+
+function getDifficultyLabel() {
+  return { easy:'🟢 简单', medium:'🟡 中等', hard:'🔴 困难' }[state.difficulty] || '🟡 中等';
+}
+
+
+
+function toggleSwapMode() {
+  state.swapMode = !state.swapMode;
+  localStorage.setItem('csSwapMode', state.swapMode);
+}
+
+// ============ 训练配置弹窗 ============
+
+const CATEGORIES = ['物流','商品','售后','反馈'];
+
+function getCatScenes(cat) {
+  const idxs = { '物流':[0,19], '商品':[20,54], '售后':[55,99], '反馈':[100,111] };
+  const r = idxs[cat]; const arr = [];
+  for (let i = r[0]; i <= Math.min(r[1], SCENES.length - 1); i++) arr.push(SCENES[i]);
+  return arr;
+}
+
+function analyzeWeaknessFromHistory() {
+  const h = getHistory();
+  if (h.length < 2) return null;
+  const dimTot = {}; const dimCnt = {};
+  for (const d of DIM_NAMES) { dimTot[d.k] = 0; dimCnt[d.k] = 0; }
+  for (const item of h) {
+    for (const d of DIM_NAMES) { dimTot[d.k] += (item.scores[d.k] || 0); dimCnt[d.k]++; }
+  }
+  const weakDims = DIM_NAMES.filter(d => (dimTot[d.k] / dimCnt[d.k]) < THRESHOLDS[d.k]);
+  const catFreq = {};
+  for (const item of h) catFreq[item.cat] = (catFreq[item.cat] || 0) + 1;
+  // 训练最少的分类优先推荐
+  const sortedCats = CATEGORIES.sort((a, b) => (catFreq[a] || 0) - (catFreq[b] || 0));
+  return { weakDims, recommendedCat: sortedCats[0] || '物流配送', catFreq, total: h.length };
+}
+
+function showTrainingSetup() {
+  const diff = state.difficulty;
+  const currentMode = state.swapMode;
+
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="padding:32px 28px;">
+        <h2 style="text-align:center;font-size:20px;margin-bottom:24px;font-weight:700;">训练配置</h2>
+
+        <div class="setup-section">
+          <div class="setup-label">我是</div>
+          <div class="setup-cards">
+            <div class="setup-card ${!currentMode ? 'active' : ''}" onclick="this.querySelector('input').click()">
+              <input type="radio" name="trainMode" value="normal" ${!currentMode ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.setup-cards .setup-card').forEach(c=>c.classList.remove('active'));this.closest('.setup-card').classList.add('active')">
+              <span class="card-icon">💬</span>
+              <span class="card-label">客服</span>
+              <span class="card-desc">我来当客服</span>
+            </div>
+            <div class="setup-card ${currentMode ? 'active' : ''}" onclick="this.querySelector('input').click()">
+              <input type="radio" name="trainMode" value="swap" ${currentMode ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.setup-cards .setup-card').forEach(c=>c.classList.remove('active'));this.closest('.setup-card').classList.add('active')">
+              <span class="card-icon">🔄</span>
+              <span class="card-label">客户</span>
+              <span class="card-desc">我来当客户</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-section">
+          <div class="setup-label">难度</div>
+          <div class="setup-cards">
+            <div class="setup-card ${diff === 'hard' || diff === 'medium' ? 'active' : ''}" onclick="this.querySelector('input').click()">
+              <input type="radio" name="trainDiff" value="hard" ${diff === 'hard' || diff === 'medium' ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.setup-cards .setup-card').forEach(c=>c.classList.remove('active'));this.closest('.setup-card').classList.add('active')">
+              <span class="card-icon">🔴</span>
+              <span class="card-label">困难</span>
+              <span class="card-desc">标准挑战</span>
+            </div>
+            <div class="setup-card ${diff === 'extreme' ? 'active' : ''}" onclick="this.querySelector('input').click()">
+              <input type="radio" name="trainDiff" value="extreme" ${diff === 'extreme' ? 'checked' : ''} style="display:none" onchange="document.querySelectorAll('.setup-cards .setup-card').forEach(c=>c.classList.remove('active'));this.closest('.setup-card').classList.add('active')">
+              <span class="card-icon">⛔</span>
+              <span class="card-label">特难</span>
+              <span class="card-desc">极限挑战</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-section">
+          <div class="setup-label">场景分类</div>
+          <div class="setup-chips">
+            ${CATEGORIES.map(c => `<label class="setup-chip active"><input type="checkbox" value="${c}" checked onchange="this.closest('.setup-chip').classList.toggle('active')"> ${c}</label>`).join('')}
+          </div>
+        </div>
+
+        <div class="setup-section">
+          <div class="setup-label">重点训练维度</div>
+          <div class="setup-chips">
+            ${DIM_NAMES.map(d => `<label class="setup-chip active"><input type="checkbox" value="${d.k}" checked onchange="this.closest('.setup-chip').classList.toggle('active')"> ${d.n}</label>`).join('')}
+          </div>
+        </div>
+
+        <div class="setup-section" style="margin-bottom:12px;">
+          <div class="setup-label">连续训练</div>
+          <div class="setup-cards">
+            <div class="setup-card active" onclick="this.querySelector('input').click()">
+              <input type="radio" name="continuous" value="1" checked style="display:none" onchange="document.querySelectorAll('.setup-cards .setup-card').forEach(c=>c.classList.remove('active'));this.closest('.setup-card').classList.add('active')">
+              <span class="card-label">单轮</span>
+            </div>
+            <div class="setup-card" onclick="this.querySelector('input').click()">
+              <input type="radio" name="continuous" value="3" style="display:none" onchange="document.querySelectorAll('.setup-cards .setup-card').forEach(c=>c.classList.remove('active'));this.closest('.setup-card').classList.add('active')">
+              <span class="card-label">连续3轮</span>
+            </div>
+            <div class="setup-card" onclick="this.querySelector('input').click()">
+              <input type="radio" name="continuous" value="5" style="display:none" onchange="document.querySelectorAll('.setup-cards .setup-card').forEach(c=>c.classList.remove('active'));this.closest('.setup-card').classList.add('active')">
+              <span class="card-label">连续5轮</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="setup-start" onclick="doStartTraining()">🚀 开始训练</button>
+      </div>
+    </div>`;
+}
+
+function showTrainingSetupWithDims(dimKeys) {
+  showTrainingSetup();
+  // 在弹窗渲染后，取消所有维度勾选，只勾选指定的薄弱维度
+  setTimeout(() => {
+    const chips = document.querySelectorAll('.setup-chips');
+    if (chips.length > 1) {
+      const dimChips = chips[1].querySelectorAll('.setup-chip');
+      const keys = dimKeys.split(',');
+      for (const chip of dimChips) {
+        const cb = chip.querySelector('input');
+        if (cb) {
+          const shouldCheck = keys.includes(cb.value);
+          cb.checked = shouldCheck;
+          chip.classList.toggle('active', shouldCheck);
+        }
+      }
+    }
+  }, 50);
+}
+
+function doStartTraining() {
+  // 读取模式
+  const modeEl = document.querySelector('input[name="trainMode"]:checked');
+  const newSwap = modeEl ? modeEl.value === 'swap' : false;
+  if (newSwap !== state.swapMode) toggleSwapMode();
+
+  // 读取难度
+  const diffEl = document.querySelector('input[name="trainDiff"]:checked');
+  const newDiff = diffEl ? diffEl.value : 'hard';
+  if (newDiff !== state.difficulty) {
+    state.difficulty = newDiff;
+    localStorage.setItem('csDifficulty', newDiff);
+  }
+
+  // 读取分类
+  const chipGroups = document.querySelectorAll('.setup-chips');
+  const catChecks = chipGroups[0] ? chipGroups[0].querySelectorAll('input:checked') : [];
+  let cats = [];
+  for (const c of catChecks) cats.push(c.value);
+  if (cats.length === 0 || cats.length === CATEGORIES.length) cats = null;
+
+  // 读取重点训练维度
+  const dimChecks = chipGroups[1] ? chipGroups[1].querySelectorAll('input:checked') : [];
+  const focusDims = [];
+  for (const cb of dimChecks) focusDims.push(cb.value);
+
+  // 读取连续训练
+  const contEl = document.querySelector('input[name="continuous"]:checked');
+  const contVal = contEl ? parseInt(contEl.value) : 1;
+  state.continuousTotal = contVal > 1 ? contVal : 0;
+  state.continuousRound = 0;
+
+  closeModal();
+  startSession(cats, focusDims);
+}
+
+async function startSession(catFilter, focusDims) {
+  state.focusDims = focusDims || [];
+  if (state.continuousTotal > 0 && state.continuousRound === 0) state.continuousRound = 1;
+  // 按分类筛选场景
+  let pool = []; // { scene, cat }
+  if (catFilter) {
+    for (const c of catFilter) {
+      for (const s of getCatScenes(c)) pool.push({ scene: s, cat: c });
+    }
+  } else {
+    for (let i = 0; i < SCENES.length; i++) pool.push({ scene: SCENES[i], cat: guessCat(i) });
+  }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  state.scene = pick.scene;
+  state.cat = pick.cat;
+  state.msgs = []; state.round = 0; state.heat = 0;
+  state.active = true; state.ended = false;
+  timerSec = 0; stopTimer();
+  state.acc = { serviceAttitude: [], emotionMgmt: [], commAbility: [], responseSpeed: [], bizAbility: [], problemSolved: [], userSatisfied: [] };
+  state.satisfactions = [];
+  document.getElementById('chatArea').innerHTML = '';
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnHistory').disabled = true;
+  document.getElementById('btnSend').disabled = true;
+  document.getElementById('btnEnd').disabled = true;
+  const inp = document.getElementById('agentInput'); inp.disabled = true;
+  inp.placeholder = '输入回复…';
+
+  // AI 模式：生成场景详情 + 客户开场白
+  if (isAiMode()) {
+    setLoading(true);
+    state.scenarioDetail = await asyncGenerateScenario(state.scene, state.cat);
+    setLoading(false);
+
+    // 显示场景背景卡片
+    const area = document.getElementById('chatArea');
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+    const isFeedback = state.cat === '反馈';
+    const warnStyle = isFeedback ? 'style="color:var(--red);font-weight:700;"' : '';
+    const bodyPrefix = isFeedback ? '<span style="color:var(--red);font-weight:700;">【反馈场景】</span> ' : '';
+    card.innerHTML = `<div class="scenario-icon">${isFeedback ? '⚠️' : '📋'}</div><div><div class="scenario-title" ${warnStyle}>${state.cat}场景${isFeedback ? ' ★' : ''}</div><div class="scenario-body">${bodyPrefix}${state.scenarioDetail}</div></div>`;
+    area.appendChild(card);
+
+    if (state.swapMode) {
+      // 互换模式：提示用户以客户身份输入
+      const tip = document.createElement('div');
+      tip.className = 'scenario-card';
+      tip.style.cssText = 'background:var(--orange2);border-color:#ffe8b0;';
+      tip.innerHTML = `<div class="scenario-icon">🗣️</div><div><div class="scenario-title" style="color:#c06c00;">角色互换模式</div><div class="scenario-body" style="color:#8a5700;">请以客户身份输入你的投诉或问题，AI 将扮演客服回复你。</div></div>`;
+      document.getElementById('chatArea').appendChild(tip);
+      document.getElementById('btnSend').disabled = false;
+      document.getElementById('btnEnd').disabled = false;
+      inp.disabled = false; inp.focus();
+      inp.placeholder = '输入客户投诉…';
+    } else {
+      // 常规 AI 模式：生成客户第一句话
+      setLoading(true);
+      const firstMsg = await asyncGenCust('', true);
+      setLoading(false);
+      addMsg('customer', firstMsg);
+      document.getElementById('btnSend').disabled = false;
+      document.getElementById('btnEnd').disabled = false;
+      inp.disabled = false; inp.focus();
+    }
+  } else {
+    state.scenarioDetail = '';
+    document.getElementById('btnSend').disabled = false;
+    document.getElementById('btnEnd').disabled = false;
+    inp.disabled = false; inp.focus();
+    addMsg('customer', state.scene);
+  }
+  startTimer();
+}
+
+function guessCatByScene(idx, catPool) {
+  // 如果知道场景属于哪个分类池，直接返回第一个（用于筛选场景）
+  if (catPool && catPool.length === 1) return catPool[0];
+  // 通过场景文本反查
+  const scene = SCENES[idx];
+  return guessCat(SCENES.indexOf(scene));
+}
+
+function guessCat(i) {
+  if (i < 20) return '物流配送'; if (i < 35) return '商品破损';
+  if (i < 55) return '商品质量'; if (i < 70) return '退换货';
+  if (i < 85) return '安装使用'; if (i < 100) return '价格活动';
+  return '反馈';
+}
+
+// ============ 回复计时器 ============
+let timerSec = 0, timerId = null, timerBadgeEl = null;
+function startTimer() {
+  clearInterval(timerId); timerSec = 0;
+  const msgs = document.querySelectorAll('.msg-group.customer');
+  const last = msgs[msgs.length - 1];
+  if (!last) return;
+  let badge = last.querySelector('.msg-timer-badge');
+  if (!badge) { badge = document.createElement('span'); badge.className = 'msg-timer-badge'; var bubble = last.querySelector('.msg-bubble'); if(bubble) bubble.appendChild(badge); }
+  timerBadgeEl = badge; if(badge) badge.textContent = '0s'; if(badge) badge.classList.remove('over');
+  updateTimer();
+  timerId = setInterval(() => { timerSec++; updateTimer(); }, 1000);
+}
+function stopTimer() { clearInterval(timerId); if (timerBadgeEl) { timerBadgeEl.textContent = ''; timerBadgeEl = null; } }
+function updateTimer() { if (timerBadgeEl) { timerBadgeEl.textContent = timerSec + 's'; timerBadgeEl.classList.toggle('over', timerSec > 30); } }
+
+function addMsg(role, text, scores) {
+  const area = document.getElementById('chatArea');
+  // 互换模式下左右对调：用户消息始终靠右，AI消息始终靠左
+  const displayRole = (state.swapMode && role === 'customer') ? 'agent' : (state.swapMode && role === 'agent') ? 'customer' : role;
+  const g = document.createElement('div'); g.className = `msg-group ${displayRole}`;
+  let lbl;
+  if (state.swapMode) {
+    lbl = role === 'customer' ? '🗣️ 客户发言' : '📞 客服回复';
+  } else {
+    lbl = role === 'customer' ? '客户' : '我的回复';
+  }
+  let h = `<div class="msg-bubble"><div class="msg-label">${lbl}</div>${text}</div>`;
+  g.innerHTML = h;
+  area.appendChild(g);
+
+  // 互换模式下不显示客户消息分析（那是用户自己发的）
+  if (role === 'customer' && !state.swapMode) {
+    if (isAiMode()) {
+      // AI 模式：先显示加载，再异步生成分析
+      const d = document.createElement('div'); d.className = 'msg-tip';
+      d.innerHTML = `<div class="tip-row" style="justify-content:center;"><span style="font-size:11px;color:var(--text3);">🤔 分析客户消息中…</span></div>`;
+      g.appendChild(d);
+      area.scrollTop = area.scrollHeight;
+      asyncGetTip(text).then(tip => {
+        d.innerHTML = `
+          <div class="tip-row"><span class="tip-label">😤 情绪</span><span class="tip-val">${tip.emotion || '—'}</span></div>
+          <div class="tip-row"><span class="tip-label">🎯 诉求</span><span class="tip-val">${tip.need || '—'}</span></div>
+          <div class="tip-row"><span class="tip-label">💡 技巧</span><span class="tip-val">${tip.method || '—'}</span></div>
+          <div class="tip-row"><span class="tip-label">📝 参考</span><span class="tip-script">「${tip.script || '—'}」</span></div>`;
+      }).catch(() => {
+        const t = getTip();
+        d.innerHTML = `<div class="tip-row"><span class="tip-label">要点</span><span class="tip-val">${t.key}</span></div><div class="tip-row"><span class="tip-label">技巧</span><span class="tip-val">${t.method}</span></div><div class="tip-row"><span class="tip-label">参考</span><span class="tip-script">「${t.script}」</span></div>`;
+      });
+    } else {
+      const t = getTip();
+      const d = document.createElement('div'); d.className = 'msg-tip';
+      d.innerHTML = `<div class="tip-row"><span class="tip-label">要点</span><span class="tip-val">${t.key}</span></div><div class="tip-row"><span class="tip-label">技巧</span><span class="tip-val">${t.method}</span></div><div class="tip-row"><span class="tip-label">参考</span><span class="tip-script">「${t.script}」</span></div>`;
+      g.appendChild(d);
+    }
+  }
+
+  if (role === 'agent' && scores) {
+    const fb = document.createElement('div'); fb.className = 'msg-feedback';
+    let allPass = true;
+    let dm = '';
+    for (const d of DIM_NAMES) {
+      const s = scores[d.k] || 0; const t = THRESHOLDS[d.k]; const p = s >= t;
+      if (!p) allPass = false;
+      dm += `<span class="dim ${p ? 'pass' : 'fail'}">${p ? '✅' : '❌'} ${d.n}${s}</span>`;
+    }
+    // 本地模式生成基于评分的改进建议
+    const failDims = [];
+    const dimTips = { serviceAttitude:'多用礼貌用语「亲亲」「抱歉」「谢谢」', emotionMgmt:'先共情再给方案，用「确实让您…了」句式', commAbility:'结尾加「您看行吗」引导确认', responseSpeed:'给具体时效承诺', bizAbility:'方案要准确具体', problemSolved:'主动推动解决', userSatisfied:'确认客户接受方案' };
+    for (const d of DIM_NAMES) { if (scores[d.k] < THRESHOLDS[d.k]) failDims.push(dimTips[d.k] || '加强训练'); }
+    const localRef = failDims.length > 0 ? failDims.map(t => '🔧 ' + t).join(' ') : '✅ 全部达标';
+    const refId = 'ref_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    fb.innerHTML = `<div class="fb-row"><span class="fb-status ${allPass ? 'pass' : 'fail'}">${allPass ? '✅ 全部达标' : '⚠️ 有未达标'}</span></div><div class="fb-row fb-dims">${dm}</div><div class="fb-ref" id="${refId}"><span class="ref-label">💡 改进建议</span><span class="ref-text">${failDims.length === 0 ? '✅ 所有维度均已达标，继续保持！🎉' : localRef}</span></div>`;
+    g.appendChild(fb);
+
+    // AI模式：异步生成更精准的参考话术
+    if (isAiMode() && text) {
+      asyncGenReference(text, scores).then(aiRef => {
+        const el = document.getElementById(refId);
+        if (el) el.innerHTML = `<span class="ref-label">💡 改进建议</span><span class="ref-text">${aiRef}</span>`;
+      }).catch(() => {});
+    }
+  }
+
+  area.scrollTop = area.scrollHeight;
+  state.msgs.push({ role, text });
+}
+
+function getTip() {
+  const cat = state.cat || '物流配送';
+  const techs = TECHNIQUES[cat] || [{ label: '共情先行', script: '确实让您…了，这事儿换谁…' }];
+  const p = techs[Math.floor(Math.random() * techs.length)];
+  const km = {
+    '物流配送': '客户在催物流，先共情→给时效→主动补偿',
+    '商品破损': '客户收到破损，先道歉→给方案→运费兜底',
+    '商品质量': '客户质疑商品，先接情绪→引导凭证→给方案',
+    '退换货': '客户想退货，直接代客操作最省事',
+    '安装使用': '客户遇到使用问题，给具体解决路径',
+    '价格活动': '客户对价格不满，先理解不辩解再核实'
+  };
+  return { key: km[cat] || '先共情再给方案', method: p.label, script: p.script };
+}
+
+let loadingTimer = null;
+function setLoading(show) {
+  const area = document.getElementById('chatArea');
+  const existing = document.getElementById('loadingIndicator');
+  if (existing) { existing.remove(); clearTimeout(loadingTimer); }
+  if (!show) return;
+  const div = document.createElement('div');
+  div.id = 'loadingIndicator';
+  div.className = 'msg-group customer';
+  div.innerHTML = `<div class="msg-bubble" style="background:#f0f0f0;opacity:0.7;"><div class="msg-label" style="font-size:11px;">🤔 思考中…</div><div style="font-size:13px;display:flex;gap:4px;"><span class="dot-pulse"></span></div></div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  loadingTimer = setTimeout(() => {
+    const el = document.getElementById('loadingIndicator');
+    if (el) el.remove();
+    if (state.active) document.getElementById('btnSend').disabled = false;
+  }, 30000);
+}
+
+async function sendReply() {
+  if (!state.active || state.ended) return;
+  const inp = document.getElementById('agentInput');
+  const t = inp.value.trim();
+  if (!t) return;
+  if (t === '结束' || t === 'end') { inp.value = ''; endSession(); return; }
+  inp.value = '';
+  stopTimer();
+
+  // 禁用按钮防重复提交
+  document.getElementById('btnSend').disabled = true;
+
+  // 角色互换模式
+  if (state.swapMode) {
+    // 用户输入作为客户消息
+    addMsg('customer', t);
+    state.round++;
+    state.heat = Math.min(state.round, 5);
+
+    // 生成客服回复（AI或本地）
+    let agentReply, scores;
+    if (isAiMode()) {
+      setLoading(true);
+      agentReply = await asyncGenAgentReply(t);
+      setLoading(false);
+      setLoading(true);
+      scores = await asyncEvalReply(agentReply);
+      setLoading(false);
+    } else {
+      agentReply = '亲亲抱歉让您久等了，我马上帮您核实处理，您看行吗？';
+      scores = evalReply(agentReply);
+    }
+
+    // 存评分 + 展示
+    for (const k of DIM_NAMES.map(d => d.k)) state.acc[k].push(scores[k]);
+    if (scores.satisfaction) state.satisfactions.push(scores.satisfaction);
+    addMsg('agent', agentReply, scores);
+    updateEmotionBar(scores.satisfaction || '一般');
+    startTimer();
+
+    document.getElementById('btnSend').disabled = false;
+    document.getElementById('agentInput').focus();
+    return;
+  }
+
+  // 评分（AI 或本地）
+  let scores;
+  if (isAiMode()) {
+    setLoading(true);
+    scores = await asyncEvalReply(t);
+    setLoading(false);
+  } else {
+    scores = evalReply(t);
+  }
+
+  // 评分维度入 acc，满意度单独存
+  for (const k of DIM_NAMES.map(d => d.k)) state.acc[k].push(scores[k]);
+  if (scores.satisfaction) state.satisfactions.push(scores.satisfaction);
+  addMsg('agent', t, scores);
+  updateEmotionBar(scores.satisfaction || '一般');
+  state.round++;
+  state.heat = Math.min(state.round, 5);
+
+  // 客户回复（AI 或本地）
+  const delay = isAiMode() ? 200 : (400 + Math.random() * 500);
+  setTimeout(async () => {
+    if (!state.active || state.ended) { document.getElementById('btnSend').disabled = false; return; }
+    let r;
+    if (isAiMode()) {
+      setLoading(true);
+      r = await asyncGenCust(t, false, scores);
+      setLoading(false);
+    } else {
+      r = genCust();
+    }
+    addMsg('customer', r);
+    startTimer();
+    document.getElementById('btnSend').disabled = false;
+    document.getElementById('agentInput').focus();
+  }, delay);
+}
+
+function genCust() {
+  const aw = Math.min(0.7, 0.3 + state.heat * 0.08);
+  const qw = 0.25; const cw = 1 - aw - qw;
+  const r = Math.random();
+  let pool = r < aw ? CUSTOMER_REPLIES.angry : r < aw + qw ? CUSTOMER_REPLIES.question : CUSTOMER_REPLIES.calm;
+  const last = state.msgs.length >= 2 ? state.msgs[state.msgs.length - 1].text : '';
+  let c, att = 0;
+  do { c = pool[Math.floor(Math.random() * pool.length)]; att++; } while (c === last && att < 10);
+  return c;
+}
+
+function evalReply(t) {
+  const sa = Math.min(10, Math.round(5 +
+    (/亲亲|您好|亲/.test(t) ? 1 : 0) + (/您|请|抱歉|谢谢|辛苦/.test(t) ? 1 : 0) +
+    (/您看|您放心|我来帮/.test(t) ? 1 : 0) + (/是我们的问题|给您添麻烦|让您/.test(t) ? 1 : 0) +
+    (/不让您|帮您处理好|为您负责|帮您跟进/.test(t) ? 1 : 0) + (/您看成吗|您看行吗/.test(t) ? 0.5 : 0)));
+  const em = Math.min(10, Math.round(5 +
+    (/确实让您|理解您|完全理解/.test(t) ? 1.5 : 0) + (/这事儿换谁|换做是我|换我我也/.test(t) ? 1 : 0) +
+    (/生气|着急|失望|担心|烦心|郁闷|窝火|心疼|不痛快|不舒服/.test(t) ? 1 : 0) +
+    (/我先跟您道个歉|给您道歉/.test(t) ? 1 : 0) + (/您别急|您消消气|您别担心/.test(t) ? 0.5 : 0) + (/心里/.test(t) ? 0.5 : 0)));
+  const ca = Math.min(10, Math.max(1, Math.round(5 +
+    (t.length >= 20 && t.length <= 120 ? 1 : 0) + (t.length > 120 ? 0.5 : 0) +
+    (!/亲亲.*亲亲.*亲亲/.test(t) && (t.split('呢').length - 1) <= 3 ? 0.5 : 0) +
+    (/您看成吗|您看可以吗|可以吗|行吗/.test(t) ? 0.5 : 0) + (/您方便|辛苦您|麻烦您/.test(t) ? 0.5 : 0) +
+    (/①|②|③|首先|其次|方案/.test(t) ? 0.5 : 0) - (/您的反馈很重要|已为您记录/.test(t) ? 1 : 0))));
+  const ba = Math.min(10, Math.round(5 +
+    (/核实|查询|查看|确认/.test(t) ? 0.5 : 0) + (/退货|退款|换货|补发|重拍/.test(t) ? 1 : 0) +
+    (/运费我们出|运费我们承担|我们出运费/.test(t) ? 1 : 0) + (/晚到必赔|体验补偿|体验保障/.test(t) ? 0.5 : 0) +
+    (/上门取件/.test(t) ? 0.5 : 0) + (/帮您申请|帮您争取/.test(t) ? 1 : 0) +
+    (/方案|选项/.test(t) ? 0.5 : 0) + (/抱歉|对不起|我们的问题/.test(t) ? 0.5 : 0)));
+  const ps = Math.min(10, Math.round(5 +
+    (/帮您|我来|我直接/.test(t) ? 1 : 0) + (/方案|您看|处理|解决/.test(t) ? 1 : 0) +
+    (/①|②|③|选项/.test(t) ? 1 : 0) + (/预计|小时|天内|明天|今天/.test(t) ? 0.5 : 0) +
+    (/您看成吗|您看行吗|可以吗|行吗/.test(t) ? 0.5 : 0) + (/我帮您处理|我来处理|帮您解决好/.test(t) ? 0.5 : 0)));
+  const us = Math.min(10, Math.round(5 +
+    (/您看行吗|您看成吗|可以吗|行吗/.test(t) ? 1.5 : 0) + (/您觉得|您说呢|您更偏向/.test(t) ? 1 : 0) +
+    (/还有其他可以帮您的吗|还有其他问题/.test(t) ? 1 : 0) + (/祝您|开心|好运/.test(t) ? 0.5 : 0) + (/感谢您|谢谢您/.test(t) ? 0.5 : 0)));
+  const avgScore = Math.round((sa + em + ca + 7 + ba + ps + us) / 7);
+  let satisfaction;
+  if (avgScore >= 8) satisfaction = '很满意';
+  else if (avgScore >= 6) satisfaction = '满意';
+  else if (avgScore >= 4) satisfaction = '一般';
+  else satisfaction = '不满意';
+  return { serviceAttitude: sa, emotionMgmt: em, commAbility: ca, responseSpeed: 7, bizAbility: ba, problemSolved: ps, userSatisfied: us, satisfaction };
+}
+
+// ============ Toast 通知 ============
+function showToast(msg, duration) {
+  const old = document.querySelector('.toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), duration || 3000);
+}
+
+// ============ AI 大模型功能 ============
+
+// 统一 system prompt — 固定不变，确保前缀缓存命中
+// 所有角色共用，通过用户消息首行 【角色：X】 切换行为
+const AI_SYSTEM_LIGHT = `你是一个电商客服培训系统的AI助手。根据用户消息首行的角色标记切换行为。
+
+【角色：场景生成】
+根据提供的原始场景信息，用一句话简洁描述客户遇到的问题。20-30字。
+
+【角色：客户模拟（首句）】
+你是真实客户，首次联系客服。根据背景和情绪说出问题，20-50字。
+
+【角色：客户模拟（回复）】
+你是真实客户，正在和客服沟通。根据背景、对话、情绪回复。15-40字。
+
+【角色：客户分析】
+分析客户消息，简洁输出：情绪、诉求、技巧、参考话术。`;
+
+const AI_SYSTEM_FULL = `你是一个电商客服培训系统的AI助手。根据用户消息首行的角色标记切换行为。
+
+【角色：评分评估】
+你是客服培训评估专家。从7个维度评分（1-10分），给出满意度评价。只返回JSON。
+
+${RULES}
+
+JSON格式: {"scores":{"serviceAttitude":7,"emotionMgmt":6,"commAbility":6,"responseSpeed":7,"bizAbility":6,"problemSolved":6,"userSatisfied":6},"satisfaction":"满意","strengths":["..."],"improvements":["..."]}
+
+【角色：客服回复生成】
+你是有经验的电商客服，必须遵守上述售后规则生成专业回复。30-60字，口语化，结尾引导确认。`;
+
+// Token 用量追踪（仅 AI 模式）
+const TOKEN_USAGE = { prompt: 0, completion: 0, cached: 0, total: 0, calls: 0 };
+let BALANCE_CACHE = { balance: null, updated: null };
+
+function updateTokenDisplay() {
+  // Token 数据内部追踪用于成本计算，不再显示在界面上
+}
+
+function formatNum(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+// 查询账户余额（DeepSeek/Mimo）
+async function fetchBalance() {
+  const el = document.getElementById('balanceDisplay');
+  if (!el || !AI_CONFIG.apiKey) { if (el) el.textContent = ''; return; }
+  // 每小时刷新一次
+  if (BALANCE_CACHE.balance !== null && BALANCE_CACHE.updated && Date.now() - BALANCE_CACHE.updated < 3600000) {
+    el.textContent = BALANCE_CACHE.balance;
+    return BALANCE_CACHE.balance;
+  }
+  el.classList.add('loading');
+  el.textContent = '⟳';
+  try {
+    let balUrl, res;
+    if (AI_CONFIG.provider === 'mimo') {
+      balUrl = getBaseUrl().replace('/v1','') + '/user/balance';
+      try { res = await fetch(balUrl, { headers: { 'Authorization': 'Bearer ' + AI_CONFIG.apiKey } }); if (!res.ok) throw new Error(); }
+      catch { balUrl = getBaseUrl() + '/dashboard/billing/credit_grants'; res = await fetch(balUrl, { headers: { 'Authorization': 'Bearer ' + AI_CONFIG.apiKey } }); }
+    } else {
+      balUrl = getBaseUrl() + '/user/balance';
+      res = await fetch(balUrl, { headers: { 'Authorization': 'Bearer ' + AI_CONFIG.apiKey } });
+    }
+    if (!res.ok) throw new Error('余额查询失败');
+    const data = await res.json();
+    let bal = '-';
+    if (data.balance_infos && data.balance_infos.length > 0) {
+      const bi = data.balance_infos[0];
+      bal = '¥' + parseFloat(bi.total_balance).toFixed(2);
+    } else if (data.balance !== undefined) {
+      bal = '¥' + parseFloat(data.balance).toFixed(2);
+    } else if (data.data && data.data.balance !== undefined) {
+      bal = '¥' + parseFloat(data.data.balance).toFixed(2);
+    } else if (data.total_grants !== undefined) {
+      bal = '¥' + parseFloat(data.total_grants).toFixed(2);
+    } else if (data.total_used !== undefined) {
+      const remain = (data.total_grants || 0) - data.total_used;
+      bal = '¥' + parseFloat(remain).toFixed(2);
+    }
+    BALANCE_CACHE.balance = bal;
+    BALANCE_CACHE.updated = Date.now();
+    const prefix = AI_CONFIG.provider === 'mimo' ? '小米' : 'DS';
+    el.textContent = prefix + ' ' + bal;
+    el.classList.remove('loading');
+    return bal;
+  } catch (e) {
+    console.warn('余额查询失败:', e.message);
+    const prefix = AI_CONFIG.provider === 'mimo' ? '小米' : 'DS';
+    el.textContent = prefix + ' --';
+    el.classList.remove('loading');
+    return null;
+  }
+}
+
+// 改造 callDeepSeek：统一 system prompt + 解析 usage + 追踪 token
+async function callDeepSeek(roleTag, userMsg, temperature = 0.7, opts = {}) {
+  if (!AI_CONFIG.apiKey) throw new Error('API Key 未配置');
+  const fullMsg = '【角色：' + roleTag + '】\n' + userMsg;
+  // 根据角色选择系统提示：轻量/完整（含规则）
+  const heavyRoles = ['评分评估', '客服回复生成'];
+  const system = heavyRoles.includes(roleTag) ? AI_SYSTEM_FULL : AI_SYSTEM_LIGHT;
+  const controller = new AbortController();
+  const timeoutMs = opts.timeout || (AI_CONFIG.provider === 'mimo' ? 15000 : 25000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const maxTk = opts.maxTokens || 512;
+  const res = await fetch(getBaseUrl() + '/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AI_CONFIG.apiKey },
+    body: JSON.stringify({
+      model: getModelName(),
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: fullMsg }
+      ],
+      temperature: temperature,
+      max_tokens: maxTk
+    }),
+    signal: controller.signal
+  });
+  clearTimeout(timeoutId);
+  if (!res.ok) {
+    let msg = 'API 请求失败';
+    try { const err = await res.json(); msg = err.error?.message || msg; } catch {}
+    throw new Error(msg + ' (' + res.status + ')');
+  }
+  const data = await res.json();
+  const content = data.choices[0].message.content.trim();
+
+  // 解析 usage
+  const u = data.usage || {};
+  const promptTk = u.prompt_tokens || 0;
+  const completionTk = u.completion_tokens || 0;
+  const cachedTk = u.prompt_cache_hit_tokens || 0;
+  const totalTk = u.total_tokens || (promptTk + completionTk);
+
+  TOKEN_USAGE.prompt += promptTk;
+  TOKEN_USAGE.completion += completionTk;
+  TOKEN_USAGE.cached += cachedTk;
+  TOKEN_USAGE.total += totalTk;
+  TOKEN_USAGE.calls++;
+  updateTokenDisplay();
+
+  return { content, usage: { prompt: promptTk, completion: completionTk, cached: cachedTk, total: totalTk } };
+}
+
+async function asyncGenerateScenario(scene, cat) {
+  const prompt = `根据以下场景，用一句话简洁描述客户遇到的问题。
+
+要求：20-30字，只说问题，不要背景信息。
+
+原始场景：${scene}
+分类：${cat}`;
+  try {
+    const res = await callDeepSeek('场景生成', prompt, 0.8, {maxTokens:300});
+    return res.content;
+  } catch (e) {
+    console.warn('AI 场景生成失败，使用原始场景：', e.message);
+    return scene;
+  }
+}
+
+function buildHistoryText() {
+  return state.msgs.slice(-6).map(m => {
+    const role = m.role === 'customer' ? '客户' : '客服';
+    return role + '：' + m.text;
+  }).join('\n');
+}
+
+async function asyncGenReference(agentReply, scores) {
+  const history = buildHistoryText();
+  // 找出未达标的维度
+  const failDims = [];
+  const dimNames = { serviceAttitude:'服务态度', emotionMgmt:'情绪管理', commAbility:'沟通能力', responseSpeed:'响应速度', bizAbility:'业务能力', problemSolved:'问题解决', userSatisfied:'用户满意' };
+  const dimTips = { serviceAttitude:'多用礼貌用语「亲亲」「抱歉」「谢谢」，首句先接情绪', emotionMgmt:'先共情再给方案，用「确实让您…了」「这事儿换谁…」句式', commAbility:'表达分条理，结尾加「您看行吗」引导确认', responseSpeed:'给具体时效承诺「X分钟内回复您」', bizAbility:'方案要准确具体，不确定的先核实再回复', problemSolved:'主动推动解决，提供可操作方案', userSatisfied:'结尾必须确认客户接受方案「您看行吗」' };
+  for (const [k, v] of Object.entries(scores || {})) {
+    if (THRESHOLDS[k] !== undefined && v < THRESHOLDS[k]) {
+      failDims.push({ key: k, name: dimNames[k] || k, tip: dimTips[k] || '建议加强训练' });
+    }
+  }
+
+  if (failDims.length === 0) return '✅ 所有维度均已达标，继续保持！🎉';
+
+  // 有未达标维度时生成改进建议
+  const diffDim = (state.focusDims && state.focusDims.length) ? state.focusDims.map(k => DIM_NAMES.find(d => d.k === k)?.n).filter(Boolean).join('、') : '';
+  const failStr = failDims.map(d => d.name + '(' + d.tip + ')').join('；');
+  const prompt = `你是一个7A客服培训教练。请根据当前回复的评分短板，给出改进建议。
+
+场景：${state.scene}
+分类：${state.cat}
+${diffDim ? '重点提升维度：' + diffDim : ''}
+
+客服回复：${agentReply}
+
+未达标维度：${failStr}
+
+请输出一句改进建议（20-40字），指出当前回复最需要改进的点及具体改法。直接输出，不要解释：`;
+
+  try {
+    const res = await callDeepSeek('客户分析', prompt, 0.3, {maxTokens:150});
+    return res.content;
+  } catch (e) {
+    return failDims.map(d => '🔧 ' + d.name + '：' + d.tip).join(' ');
+  }
+}
+
+async function asyncGenCust(lastAgentReply, isFirst, lastScores) {
+  const history = buildHistoryText();
+  const emotion = state.heat <= 1 ? '比较平静' : state.heat <= 3 ? '有点不耐烦' : '很生气';
+  const background = state.scenarioDetail || state.scene;
+
+  if (isFirst) {
+    const diffStyle = state.difficulty === 'easy' ? '你性格温和，说话客气礼貌' : state.difficulty === 'hard' ? '你性格急躁，说话带火气，语气冲' : state.difficulty === 'extreme' ? '你极度愤怒，说话刻薄难听，完全不讲理，恶意找茬' : '你是个普通消费者';
+    const prompt = `你是电商平台的一位真实客户，遇到售后问题准备联系客服。
+
+你的背景信息（这是你的真实情况）：
+${background}
+
+你的当前情绪：${emotion}
+${diffStyle}
+
+要求：
+1. 这是你第一次找客服，先说出你遇到的问题
+2. 口语化自然，像一个真实的人在打字，20-50字
+3. 只说问题本身，不要替客服想解决方案
+4. 根据情绪选择语气
+
+请以客户身份说出开场第一句话：`;
+
+    try {
+      const r = await callDeepSeek('客户模拟（首句）', prompt, 0.85);
+      return r.content;
+    } catch (e) {
+      console.warn('AI 首句生成失败，使用原始场景：', e.message);
+      return state.scene;
+    }
+  }
+
+  // 根据上一轮评分动态调整客户攻击方向
+  let weakAttack = '';
+  if (lastScores) {
+    const dimNames = { serviceAttitude:'服务态度', emotionMgmt:'情绪管理', commAbility:'沟通能力', responseSpeed:'响应速度', bizAbility:'业务能力', problemSolved:'问题解决', userSatisfied:'用户满意' };
+    const dimAttack = { serviceAttitude:'客服态度冷漠，不满意', emotionMgmt:'客服没有理解我的感受，不满意', commAbility:'客服说得不清楚，不满意', responseSpeed:'客服回复太慢/没有给具体时间，不满意', bizAbility:'客服方案不对/不专业，不满意', problemSolved:'客服没有解决我的问题，不满意', userSatisfied:'客服没有确认我是否接受，不满意' };
+    let worstDim = null, worstGap = 0;
+    for (const [k, v] of Object.entries(lastScores)) {
+      const t = THRESHOLDS[k];
+      if (t !== undefined) { const gap = t - v; if (gap > worstGap) { worstGap = gap; worstDim = k; } }
+    }
+    if (worstDim && worstGap > 0) weakAttack = '\n作为客户，你对客服最不满意的是「' + (dimNames[worstDim] || worstDim) + '」：' + (dimAttack[worstDim] || '让客服改进');
+  }
+
+  const diffPersonality = state.difficulty === 'easy' ? '你性格温和，好说话，不容易生气，即使不满意也表达得很客气' : state.difficulty === 'hard' ? '你性格急躁，很难安抚，客服稍微不满意你就发火，措辞尖锐' : state.difficulty === 'extreme' ? '你极度愤怒，恶意找茬，客服说什么你都怼回去，完全不讲道理，措辞刻薄恶毒' : '你是个普通消费者，情绪随客服态度正常波动';
+  const prompt = `你是电商平台的一位真实客户，正在和客服沟通售后问题。${weakAttack}
+
+你的背景信息（这是你的真实情况）：
+${background}
+
+你的当前情绪：${emotion}
+${diffPersonality}
+
+规则：
+1. 根据客服的回复调整态度——客服态度好你慢慢消气，客服敷衍推诿你更生气
+2. 回复要口语化、自然，像一个真实的人在打字聊天，15-40字
+3. 不要替客服想办法解决问题，你是客户，不是客服
+4. 每次只说一个点，不要一次把所有诉求说完
+5. 根据情绪选择语气：愤怒时说狠话质问，平静时正常沟通
+
+最近的对话：
+${history}
+
+客服刚才说：${lastAgentReply}
+
+请以客户身份回复：`;
+
+  try {
+    const r = await callDeepSeek('客户模拟（回复）', prompt, 0.85);
+    return r.content;
+  } catch (e) {
+    console.warn('AI 客户生成失败，降级到本地：', e.message);
+    showToast('⚠️ AI 暂时不可用，已切换为本地模式');
+    return genCust();
+  }
+}
+
+// ============ AI 扮演客服 ============
+
+async function asyncGenAgentReply(customerText) {
+  const history = buildHistoryText();
+  const background = state.scenarioDetail || state.scene;
+  const isFeedback = state.cat === '反馈';
+  const diffGuide = state.difficulty === 'easy' ? '简单模式，回复可以适当简单但礼貌' : state.difficulty === 'hard' ? '困难模式，客户情绪激动，回复要格外小心' : state.difficulty === 'extreme' ? '特难模式，客户极度愤怒恶意找茬，回复必须完美无懈可击' : '中等模式';
+  const prompt = `你是一位经验丰富的电商客服专家。请回复客户的消息。${isFeedback ? '\n\n注意：此场景为反馈场景，你无法直接解决客户问题，需要：1.先共情安抚客户情绪 2.告知客户你会反馈给售后团队 3.承诺48小时内给具体回复 4.让客户放心会有同事跟进。' : ''}
+
+场景类型：${state.cat}
+客户问题：${state.scene}
+场景背景：${background}
+${diffGuide}
+
+对话历史：
+${history}
+
+客户说：${customerText}
+
+要求：
+1. 专业、礼貌、有共情
+2. 给出具体解决方案或行动承诺，且符合售后规则
+3. 结尾有引导确认动作（您看行吗/您看成吗）
+4. 30-60字，口语化自然
+
+只输出回复内容，不要解释：`;
+
+  try {
+    const res = await callDeepSeek('客服回复生成', prompt, 0.5, {maxTokens:300});
+    return res.content;
+  } catch (e) {
+    console.warn('AI 客服回复生成失败：', e.message);
+    return '亲亲抱歉让您久等了，我马上帮您核实处理，您看行吗？';
+  }
+}
+
+// ============ AI 客户消息分析 ============
+
+async function asyncGetTip(customerText) {
+  const history = buildHistoryText();
+  const prompt = `你是一个客服培训教练。请分析以下客户消息，给出应对建议。
+
+场景类型：${state.cat}
+客户原始问题：${state.scene}
+对话历史：
+${history}
+
+客户最新消息：${customerText}
+
+请分析后按以下格式输出（不要多余内容）：
+情绪：客户当前的情绪状态（10字以内）
+诉求：客户的核心诉求是什么（15字以内）
+技巧：客服应该用什么技巧应对（15字以内）
+参考：一句参考话术（20-40字，口语化）
+
+示例格式：
+情绪：非常着急生气
+诉求：要求立刻发货
+技巧：先道歉再给时效承诺
+参考：亲亲实在抱歉让您久等了，我马上去核实包裹到哪了，几分钟内给您回复`;
+
+  try {
+    const res = await callDeepSeek('客户分析', prompt, 0.3, {maxTokens:200});
+    const text = res.content;
+    const emotion = (text.match(/[：:]\s*(.+)/)?.[1] || '').split('\n')[0];
+    const lines = text.split('\n').filter(l => l.trim());
+    const result = { emotion: '', need: '', method: '', script: '' };
+    for (const line of lines) {
+      if (line.includes('情绪') || line.includes('心情')) result.emotion = line.replace(/^.*?[：:]\s*/, '');
+      else if (line.includes('诉求') || line.includes('需求')) result.need = line.replace(/^.*?[：:]\s*/, '');
+      else if (line.includes('技巧') || line.includes('策略')) result.method = line.replace(/^.*?[：:]\s*/, '');
+      else if (line.includes('参考') || line.includes('话术')) result.script = line.replace(/^.*?[：:]\s*/, '');
+    }
+    return result;
+  } catch (e) {
+    console.warn('AI 消息分析失败，使用本地规则：', e.message);
+    const local = getTip();
+    return { emotion: local.key, need: state.cat, method: local.method, script: local.script };
+  }
+}
+
+async function asyncEvalReply(agentReply) {
+  const history = buildHistoryText();
+  const prompt = `你是一位专业的客服培训评估专家。请评估客服的最新回复。
+
+场景类型：${state.cat}
+客户问题：${state.scene}
+
+对话历史：
+${history}
+
+客服最新回复：${agentReply}
+
+请从7个维度评分（1-10分），并给出客户满意度评价：
+1. serviceAttitude（服务态度）- 是否礼貌尊重、主动担当
+2. emotionMgmt（情绪管理）- 是否共情安抚、不激化矛盾
+3. commAbility（沟通能力）- 表达是否清晰有条理
+4. responseSpeed（响应速度）- 是否及时回应、给时效承诺
+5. bizAbility（业务能力）- 方案是否具体正确
+6. problemSolved（问题解决）- 是否推动实质解决
+7. userSatisfied（用户满意）- 结尾是否有确认引导动作
+8. satisfaction（客户满意度）- 评估客户对这次回复的感受：很满意 / 满意 / 一般 / 不满意
+
+${state.cat === '反馈' ? '注意：此场景为反馈场景，客服无法直接解决问题时需转交售后团队，承诺48小时内回复。评估客服是否做到：1.共情安抚 2.告知反馈流程 3.承诺48小时时效 4.让客户放心。\n' : ''}本次训练重点提升维度：${(state.focusDims && state.focusDims.length) ? state.focusDims.map(k => DIM_NAMES.find(d => d.k === k)?.n).filter(Boolean).join('、') : '全部'}
+
+评分尺度：
+9-10 = 出色标杆，7-8 = 良好达标，5-6 = 及格有提升空间，1-4 = 需大幅改进
+当前难度：${state.difficulty === 'easy' ? '简单模式——评分可适当宽松，客户较好说话' : state.difficulty === 'hard' ? '困难模式——评分严格，客户非常难缠，标准相应提高' : state.difficulty === 'extreme' ? '特难模式——评分极为严格，客户恶意找茬，标准大幅提高' : '中等模式——正常评分标准'}
+
+请返回严格JSON格式，不要包含其他文字：
+{"scores":{"serviceAttitude":7,"emotionMgmt":6,"commAbility":6,"responseSpeed":7,"bizAbility":6,"problemSolved":6,"userSatisfied":6},"satisfaction":"满意","strengths":["..."],"improvements":["..."]}`;
+
+  try {
+    const res = await callDeepSeek('评分评估', prompt, 0.3, {maxTokens:400});
+    const raw = res.content;
+    // 尝试提取 JSON（模型可能额外输出文字包裹）
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('无法解析 AI 评分结果');
+    const parsed = JSON.parse(jsonMatch[0]);
+    const s = parsed.scores || parsed;
+    const sat = parsed.satisfaction || (s.satisfaction || '一般');
+    // 确保满意度值是合法的
+    const validSat = SAT_LEVELS.includes(sat) ? sat : '一般';
+    return {
+      serviceAttitude: clamp(s.serviceAttitude),
+      emotionMgmt: clamp(s.emotionMgmt),
+      commAbility: clamp(s.commAbility),
+      responseSpeed: clamp(s.responseSpeed),
+      bizAbility: clamp(s.bizAbility),
+      problemSolved: clamp(s.problemSolved),
+      userSatisfied: clamp(s.userSatisfied),
+      satisfaction: validSat
+    };
+  } catch (e) {
+    console.warn('AI 评分失败，降级到本地：', e.message);
+    showToast('⚠️ AI 评分降级到本地规则');
+    return evalReply(agentReply);
+  }
+}
+
+function clamp(v) { return Math.min(10, Math.max(1, Math.round(v))); }
+
+// ============ 情绪温度计 ============
+
+function updateEmotionBar(satisfaction) {
+  const bar = document.getElementById('emotionBar');
+  const fill = document.getElementById('emotionFill');
+  const label = document.getElementById('emotionLabel');
+  if (!bar || !fill || !label) return;
+  if (!state.active) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const map = { '很满意': { pct: 90, txt: '😍 客户很满意', color: '#34c759' },
+    '满意': { pct: 70, txt: '😊 客户满意', color: '#0071e3' },
+    '一般': { pct: 40, txt: '😐 客户觉得一般', color: '#ff9500' },
+    '不满意': { pct: 15, txt: '😠 客户不满意', color: '#ff3b30' } };
+  const info = map[satisfaction] || { pct: 50, txt: '分析中…', color: '#86868b' };
+  fill.style.width = info.pct + '%';
+  fill.style.background = info.color;
+  label.textContent = info.txt;
+  label.style.color = info.color;
+}
+
+// ============ 发送前预评分 ============
+
+let previewTimer = null;
+
+function setupPreview() {
+  const inp = document.getElementById('agentInput');
+  if (!inp) return;
+  inp.addEventListener('input', function() {
+    clearTimeout(previewTimer);
+    const area = document.getElementById('previewArea');
+    if (!state.active || !this.value.trim()) { area.style.display = 'none'; return; }
+    previewTimer = setTimeout(() => doPreview(this.value.trim()), 600);
+  });
+}
+
+function doPreview(text) {
+  const area = document.getElementById('previewArea');
+  const dims = document.getElementById('previewDims');
+  const tip = document.getElementById('previewTip');
+  if (!area || !dims || !tip) return;
+  area.style.display = 'flex';
+  const s = evalReply(text);
+  let html = '';
+  const keys = ['serviceAttitude','emotionMgmt','commAbility','responseSpeed','bizAbility','problemSolved','userSatisfied'];
+  const names = { serviceAttitude:'态度', emotionMgmt:'情绪', commAbility:'沟通', responseSpeed:'响应', bizAbility:'业务', problemSolved:'解决', userSatisfied:'满意' };
+  let failCount = 0;
+  for (const k of keys) {
+    const v = s[k] || 0; const t = THRESHOLDS[k]; const p = v >= t;
+    if (!p) failCount++;
+    html += `<span class="pd-item ${p ? 'pass' : 'fail'}">${names[k]}${v}/${t}</span>`;
+  }
+  dims.innerHTML = html;
+  const tips = [];
+  if (failCount > 0) tips.push('发送后 AI 将给出详细评分和优化建议');
+  if (!/您看行吗|您看成吗|可以吗/.test(text)) tips.push('结尾加「您看行吗」引导确认');
+  if (!/抱歉|对不起|不好意思/.test(text) && state.heat > 2) tips.push('客户情绪较高，建议先道歉再给方案');
+  if (!/帮您|我来|我直接/.test(text)) tips.push('多用「帮您」「我来」体现主动服务');
+  tip.textContent = tips.length > 0 ? '💡 ' + tips[0] : '✅ 基础要素齐全';
+}
+
+// ============ 数据看板 ============
+
+function showDashboard() {
+  const history = getHistory();
+  if (history.length === 0) {
+    showToast('暂无训练数据，完成训练后自动生成');
+    return;
+  }
+  // 统计周期
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekAgo = today.getTime() - 7*86400000;
+  let todayCount = 0, weekCount = 0;
+  const dimTotals = {}; const dimCounts = {};
+  for (const d of DIM_NAMES) { dimTotals[d.k] = 0; dimCounts[d.k] = 0; }
+
+  // 分前半/后半计算趋势
+  const mid = Math.floor(history.length / 2);
+  const laterTotals = {}; const laterCounts = {};
+  for (const d of DIM_NAMES) { laterTotals[d.k] = 0; laterCounts[d.k] = 0; }
+
+  for (let idx = 0; idx < history.length; idx++) {
+    const h = history[idx];
+    const t = h.id || 0;
+    if (t >= today.getTime()) todayCount++;
+    if (t >= weekAgo) weekCount++;
+    for (const d of DIM_NAMES) {
+      dimTotals[d.k] += (h.scores[d.k] || 0);
+      dimCounts[d.k]++;
+    }
+    if (idx >= mid) {
+      for (const d of DIM_NAMES) {
+        laterTotals[d.k] += (h.scores[d.k] || 0);
+        laterCounts[d.k]++;
+      }
+    }
+  }
+
+  // 维度平均分 + 分析薄弱项 + 趋势箭头
+  let dimHtml = '';
+  const weakDims = [];
+  for (const d of DIM_NAMES) {
+    const avg = dimCounts[d.k] > 0 ? (dimTotals[d.k] / dimCounts[d.k]).toFixed(1) : '—';
+    const pass = parseFloat(avg) >= THRESHOLDS[d.k];
+    const barW = Math.min(100, Math.round((parseFloat(avg) / 10) * 100));
+    if (!pass && dimCounts[d.k] > 0) weakDims.push({ name: d.n, key: d.k, avg: parseFloat(avg), threshold: THRESHOLDS[d.k] });
+    // 趋势箭头
+    let trend = '';
+    if (laterCounts[d.k] > 0 && dimCounts[d.k] > 0) {
+      const earlierAvg = (dimTotals[d.k] - laterTotals[d.k]) / (dimCounts[d.k] - laterCounts[d.k]);
+      const laterAvg = laterTotals[d.k] / laterCounts[d.k];
+      const diff = laterAvg - earlierAvg;
+      if (diff > 0.2) trend = '<span style="color:#34c759;font-size:10px;"> ↑' + diff.toFixed(1) + '</span>';
+      else if (diff < -0.2) trend = '<span style="color:#ff3b30;font-size:10px;"> ↓' + Math.abs(diff).toFixed(1) + '</span>';
+      else trend = '<span style="color:#86868b;font-size:10px;"> →</span>';
+    }
+    dimHtml += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:12px;">
+      <span style="width:56px;text-align:right;color:var(--text2);">${d.n}</span>
+      <div style="flex:1;height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;">
+        <div style="height:100%;width:${barW}%;background:${pass ? '#34c759' : '#ff3b30'};border-radius:5px;"></div>
+      </div>
+      <span style="width:40px;font-weight:600;color:${pass ? '#1a8a3f' : '#c41e1e'};">${avg}</span>
+      <span style="font-size:10px;color:var(--text3);">/${d.threshold}</span>
+      ${trend}
+    </div>`;
+  }
+
+  // 改进建议
+  let insightHtml = '';
+  if (weakDims.length > 0) {
+    const tips = {
+      '服务态度': '多用「亲亲」「您好」「抱歉」「谢谢」等礼貌用语，首句先接情绪再处理问题',
+      '情绪管理': '先共情再给方案，使用「确实让您…了」「这事儿换谁心里都不舒服」句式',
+      '沟通能力': '表达要清晰有条理，给出1-2-3步骤，结尾加「您看行吗」引导确认',
+      '响应速度': '第一时间回应客户，即使需要查询也给具体时效承诺「X分钟内回复您」',
+      '业务能力': '熟悉售后规则，给出准确具体的方案，不确定时先核实再回复',
+      '问题解决': '主动推动问题解决，提供可操作的方案，不要停留在口头抱歉',
+      '用户满意': '每轮结尾必须加引导确认「您看行吗」「您看成吗」，确认客户接受方案'
+    };
+    const weakKeys = weakDims.map(d => d.key);
+    const tipItems = weakDims.map(d => {
+      const t = tips[d.name] || '建议针对性加强训练';
+      return `<div style="display:flex;gap:6px;margin-bottom:4px;font-size:11px;">
+        <span style="color:#c41e1e;flex-shrink:0;">🔧</span>
+        <span style="color:var(--text2);">${d.name}：${t}</span>
+      </div>`;
+    }).join('');
+    insightHtml = `
+      <div style="margin-top:12px;padding:10px 12px;background:#fff8e1;border-radius:10px;">
+        <div style="font-size:12px;font-weight:600;color:#c06c00;margin-bottom:4px;">🎯 需要加强（${weakDims.length}项）</div>
+        ${tipItems}
+        <div style="margin-top:6px;display:flex;gap:6px;">
+          <button style="flex:1;padding:8px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:500;cursor:pointer;" onclick="closeModal();showTrainingSetupWithDims('${weakKeys.join(',')}')">🚀 专项训练</button>
+        </div>
+      </div>`;
+  } else {
+    insightHtml = `
+      <div style="margin-top:12px;padding:10px 12px;background:var(--green2);border-radius:10px;">
+        <div style="font-size:12px;font-weight:600;color:#1a8a3f;">🎉 所有维度均已达标</div>
+      </div>`;
+  }
+
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>📊 数据看板</h2>
+
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <div style="flex:1;text-align:center;padding:10px;background:#f5f5f7;border-radius:10px;">
+            <div style="font-size:22px;font-weight:700;">${todayCount}</div>
+            <div style="font-size:10px;color:var(--text2);">今日</div>
+          </div>
+          <div style="flex:1;text-align:center;padding:10px;background:#f5f5f7;border-radius:10px;">
+            <div style="font-size:22px;font-weight:700;">${weekCount}</div>
+            <div style="font-size:10px;color:var(--text2);">本周</div>
+          </div>
+          <div style="flex:1;text-align:center;padding:10px;background:#f5f5f7;border-radius:10px;">
+            <div style="font-size:22px;font-weight:700;">${history.length}</div>
+            <div style="font-size:10px;color:var(--text2);">总计</div>
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px;">📈 7维评分</div>
+        ${dimHtml}
+        ${insightHtml}
+
+        <div class="modal-actions" style="margin-top:14px;">
+          <button class="btn-secondary" onclick="closeModal()" style="flex:1;">关闭</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ============ 薄弱项专项训练 ============
+
+function showWeakness() {
+  const history = getHistory();
+  if (history.length < 2) {
+    showToast('需要至少完成 2 轮训练后才能分析薄弱项');
+    return;
+  }
+  const dimTotals = {}; const dimCounts = {};
+  for (const d of DIM_NAMES) { dimTotals[d.k] = 0; dimCounts[d.k] = 0; }
+  const catTotals = {}; const catCounts = {};
+  for (const h of history) {
+    for (const d of DIM_NAMES) {
+      dimTotals[d.k] += (h.scores[d.k] || 0);
+      dimCounts[d.k]++;
+    }
+    catTotals[h.cat] = (catTotals[h.cat] || 0) + 1;
+    catCounts[h.cat] = (catCounts[h.cat] || 0) + 1;
+  }
+  const dimAvgs = DIM_NAMES.map(d => {
+    const avg = dimCounts[d.k] > 0 ? (dimTotals[d.k] / dimCounts[d.k]).toFixed(1) : '—';
+    const threshold = THRESHOLDS[d.k];
+    return { name: d.n, key: d.k, avg: parseFloat(avg), threshold, pass: parseFloat(avg) >= threshold };
+  });
+  const weakDims = dimAvgs.filter(d => !d.pass);
+  const weakCats = Object.keys(catCounts).sort((a, b) => (catTotals[a] || 0) - (catTotals[b] || 0));
+  const bestCat = weakCats.length > 0 ? weakCats[0] : '物流配送';
+
+  let html = `<div style="margin-bottom:8px;font-size:12px;font-weight:600;">📊 综合评分（共 ${history.length} 轮）</div>`;
+  for (const d of dimAvgs) {
+    const cls = d.pass ? 'pass' : 'fail';
+    const label = d.pass ? '✅' : '❌';
+    html += `<div class="modal-score-item ${cls}" style="padding:5px 10px;">
+      <div><div class="name">${d.name}</div></div>
+      <div class="val ${cls}">${d.avg}<span style="font-size:10px;color:#999;">/${d.threshold}</span> ${label}</div>
+    </div>`;
+  }
+
+  let recHtml;
+  if (weakDims.length > 0) {
+    const weakNames = weakDims.map(d => d.name + '(' + d.avg.toFixed(1) + '分)').join('、');
+    recHtml = `<div style="padding:10px 12px;background:#fff8e1;border-radius:12px;margin-top:8px;">
+      <div style="font-size:12px;font-weight:600;color:#c06c00;margin-bottom:4px;">🎯 薄弱项</div>
+      <div style="font-size:11px;color:#8a5700;line-height:1.6;">${weakNames}</div>
+      <div style="font-size:11px;color:#8a5700;margin-top:4px;">推荐训练：<strong>${bestCat}</strong> 场景</div>
+      <button class="btn-start" style="margin-top:6px;width:100%;padding:8px;font-size:13px;" onclick="closeModal();startSession();">🚀 专项训练</button>
+    </div>`;
+  } else {
+    recHtml = `<div style="padding:10px 12px;background:var(--green2);border-radius:12px;margin-top:8px;">
+      <div style="font-size:12px;font-weight:600;color:#1a8a3f;">🎉 所有维度均达标</div>
+      <button class="btn-start" style="margin-top:6px;width:100%;padding:8px;background:var(--blue);font-size:13px;" onclick="closeModal();startSession();">🚀 继续训练</button>
+    </div>`;
+  }
+
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>🎯 薄弱项分析</h2>
+        ${html}
+        ${recHtml}
+        <div class="modal-actions" style="margin-top:10px;">
+          <button class="btn-secondary" onclick="closeModal()" style="flex:1;">关闭</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+document.addEventListener('DOMContentLoaded', setupPreview);
+
+function endSession() {
+  if (state.ended) return;
+  state.ended = true; state.active = false;
+  stopTimer();
+  document.getElementById('btnSend').disabled = true;
+  document.getElementById('btnEnd').disabled = true;
+  document.getElementById('btnHistory').disabled = false;
+  document.getElementById('agentInput').disabled = true;
+  const fs = {};
+  for (const k of Object.keys(state.acc)) {
+    const a = state.acc[k]; fs[k] = a.length === 0 ? 5 : Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+  }
+  saveToHistory(fs);
+  showModal(fs);
+}
+
+async function showModal(s) {
+  const allPass = DIM_NAMES.every(d => (s[d.k] || 0) >= THRESHOLDS[d.k]);
+  let sh = '';
+  for (const d of DIM_NAMES) {
+    const v = s[d.k] || 0; const t = THRESHOLDS[d.k]; const p = v >= t;
+    sh += `<div class="modal-score-item ${p ? 'pass' : 'fail'}"><div><div class="name">${d.n}</div><div class="threshold">阈值 ≥${t}</div></div><div class="val ${p ? 'pass' : 'fail'}">${v}<span style="font-size:11px;font-weight:400;color:#999;">/${t}</span></div></div>`;
+  }
+
+  // 先显示弹窗骨架（含加载状态），再异步生成 AI 复盘
+  const ref = REFERENCE_BY_CAT[state.cat] || '';
+  const container = document.getElementById('modalContainer');
+  container.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>📋 综合复盘${state.continuousTotal > 0 ? '（' + state.continuousRound + '/' + state.continuousTotal + '轮）' : ''}</h2>
+        <div class="result-badge ${allPass ? 'pass' : 'fail'}">${allPass ? '✅ 命中好服务' : '❌ 未命中好服务'}</div>
+        <div class="modal-score-grid">${sh}</div>
+        <div class="modal-review" id="reviewSection">
+          <h3>复盘总结</h3>
+          <div class="review-loading" id="reviewLoading">🤔 AI 复盘生成中…</div>
+          <div id="reviewContent"></div>
+        </div>
+        ${ref ? `<div class="modal-ref"><div class="ref-label">💡 ${state.cat}场景参考话术</div>${ref}</div>` : ''}
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeModal()">关闭</button>
+          <button class="btn-primary" id="nextRoundBtn" onclick="closeModal();nextRound();">${state.continuousTotal > 0 && state.continuousRound < state.continuousTotal ? '继续第' + (state.continuousRound + 1) + '轮 →' : '下一轮训练'}</button>
+        </div>
+      </div>
+    </div>`;
+
+  // AI 模式：异步生成复盘
+  if (isAiMode() && state.round > 0) {
+    try {
+      const aiRev = await asyncGenReview(s);
+      document.getElementById('reviewLoading').style.display = 'none';
+      document.getElementById('reviewContent').innerHTML = formatAiReview(aiRev);
+    } catch (e) {
+      document.getElementById('reviewLoading').style.display = 'none';
+      document.getElementById('reviewContent').innerHTML = genReviewItemsHtml(s);
+    }
+  } else {
+    document.getElementById('reviewLoading').style.display = 'none';
+    document.getElementById('reviewContent').innerHTML = genReviewItemsHtml(s);
+  }
+}
+
+function genReviewItemsHtml(s) {
+  const items = [];
+  // 复用 genReview 逻辑
+  const all = state.msgs.filter(m => m.role === 'agent').map(m => m.text).join('');
+  const hl = [];
+  if (/确实让您|理解您/.test(all)) hl.push('情绪词开头到位，接住了客户情绪');
+  if (/这事儿换谁|换做是我/.test(all)) hl.push('用了「换谁」句式建立共情');
+  if (/帮您申请|帮您争取/.test(all)) hl.push('主动使用「帮您申请」体现服务意识');
+  if (/您看行吗|您看成吗|可以吗/.test(all)) hl.push('结尾有引导确认动作');
+  if (/运费我们出|我们承担运费/.test(all)) hl.push('主动告知运费承担方，业务信息清晰');
+  if (/①|②|③/.test(all)) hl.push('给出了多个方案供客户选择');
+  if (/是我们的问题|给您道歉/.test(all)) hl.push('主动承认责任不推诿');
+  if (hl.length === 0) hl.push('基础功扎实，可以尝试更多共情表达✨');
+  for (const h of hl) items.push(`<div class="modal-review-item good"><span class="label">✅</span> ${h}</div>`);
+
+  // 满意度分析
+  const sats = state.satisfactions;
+  if (sats && sats.length > 0) {
+    const satCounts = { '很满意': 0, '满意': 0, '一般': 0, '不满意': 0 };
+    for (const x of sats) if (satCounts[x] !== undefined) satCounts[x]++;
+    if (satCounts['不满意'] > 0) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> 出现 ${satCounts['不满意']} 次「不满意」评价，注意提升共情和解决问题能力</div>`);
+    if (satCounts['一般'] > 0) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> 有 ${satCounts['一般']} 轮评价为「一般」，还有提升空间</div>`);
+    if (satCounts['很满意'] > 0) items.push(`<div class="modal-review-item good"><span class="label">✅</span> 获得 ${satCounts['很满意']} 次「很满意」评价，保持出色表现 💪</div>`);
+    const satScore = satCounts['很满意'] * 3 + satCounts['满意'] * 2 + satCounts['一般'] * 1;
+    const satMax = sats.length * 3;
+    if (sats.length >= 3 && satScore / satMax < 0.5) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> 整体满意度偏低，建议复盘各轮评分较低的维度针对性改进</div>`);
+  }
+
+  const im = [];
+  if (!/确实让您|理解您/.test(all)) im.push('开场缺少情绪词，建议用「确实让您[情绪]+了」开头');
+  if (!/您看行吗|您看成吗|可以吗/.test(all)) im.push('结尾缺少引导确认，用户满意项可能不达标');
+  if (!/这事儿换谁|换做是我/.test(all)) im.push('可以增加「换谁/换做是我」句式强化共情');
+  if (/担心/.test(all) && !/生气|着急|失望/.test(all)) im.push('注意「担心」适合食品变质/过敏场景，物流破损建议用「生气/失望/着急」');
+  if (!/帮您申请|帮您争取/.test(all)) im.push('建议多用「帮您申请/争取」体现站在客户一边');
+  if (s.userSatisfied < 6) im.push('用户满意项偏低，注意每轮结尾问一句「您看行吗」引导确认');
+  if (s.emotionMgmt < 6) im.push('情绪管理项偏低，注意先共情再接方案，不要跳过情绪');
+  if (!/(我们的问题|给您道歉)/.test(all)) im.push('注意先承认责任再给方案，不要辩解');
+  if (im.length === 0) im.push('整体表现优秀，继续保持！🎉');
+  while (im.length > 4) im.pop();
+  for (const i of im) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> ${i}</div>`);
+  items.push(`<div class="modal-review-item tip"><span class="label">🏷️</span> ${state.cat} · 共 ${state.round} 回合</div>`);
+  return items.join('');
+}
+
+function formatAiReview(text) {
+  // 将 AI 的结构化文本转成 HTML
+  let html = '';
+  const sections = text.split(/\n(?=【)/);
+  for (const sec of sections) {
+    const trimmed = sec.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith('【总体评价】')) {
+      const body = trimmed.replace('【总体评价】', '').trim();
+      html += `<div class="modal-review-item good" style="background:var(--blue2);border-left:3px solid var(--blue);"><span class="label">📝</span> ${body}</div>`;
+    } else if (trimmed.startsWith('【亮点】')) {
+      const body = trimmed.replace('【亮点】', '').trim();
+      const lines = body.split('\n').filter(l => l.trim());
+      for (const line of lines) {
+        html += `<div class="modal-review-item good"><span class="label">✅</span> ${line.replace(/^[\d\-.、\s]+/, '')}</div>`;
+      }
+    } else if (trimmed.startsWith('【改进点】')) {
+      const body = trimmed.replace('【改进点】', '').trim();
+      const lines = body.split('\n').filter(l => l.trim());
+      for (const line of lines) {
+        html += `<div class="modal-review-item improve"><span class="label">🔧</span> ${line.replace(/^[\d\-.、\s]+/, '')}</div>`;
+      }
+    } else if (trimmed.startsWith('【话术优化建议】')) {
+      const body = trimmed.replace('【话术优化建议】', '').trim();
+      const tips = body.split('\n').filter(l => l.trim());
+      html += `<div style="margin-top:8px;"><div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:4px;">💡 话术优化建议</div>`;
+      for (const tip of tips) {
+        const t = tip.replace(/^[\d\-.、\s]+/, '');
+        if (t.includes('→') || t.includes('=>')) {
+          const parts = t.split(/[→=]>?/);
+          if (parts.length >= 2) {
+            html += `<div class="modal-review-item tip" style="background:#fff8e1;border-left:3px solid #ff9500;margin-bottom:6px;">
+              <div style="font-size:11px;color:#8a5700;margin-bottom:2px;"><span style="font-weight:600;">原始：</span>${parts[0].trim()}</div>
+              <div style="font-size:12px;color:#c06c00;font-weight:500;"><span style="font-weight:600;">优化：</span>${parts.slice(1).join('→').trim()}</div>
+            </div>`;
+          }
+        } else {
+          html += `<div class="modal-review-item tip" style="background:#fff8e1;">${t}</div>`;
+        }
+      }
+      html += `</div>`;
+    } else {
+      html += `<div class="modal-review-item tip">${trimmed}</div>`;
+    }
+  }
+  // 补充场景标签
+  html += `<div class="modal-review-item tip"><span class="label">🏷️</span> ${state.cat} · 共 ${state.round} 回合</div>`;
+  return html;
+}
+
+function nextRound() {
+  if (state.continuousTotal > 0 && state.continuousRound < state.continuousTotal) {
+    state.continuousRound++;
+    startSession();
+  } else {
+    startSession();
+  }
+}
+
+function buildSatSummary() {
+  const sats = state.satisfactions;
+  if (!sats || sats.length === 0) return '';
+  const counts = { '很满意': 0, '满意': 0, '一般': 0, '不满意': 0 };
+  for (const s of sats) if (counts[s] !== undefined) counts[s]++;
+  const total = sats.length;
+  // 确定总体满意度（取众数，平局取较高者）
+  let primary = '一般';
+  for (const lv of SAT_LEVELS) {
+    if (counts[lv] > (counts[primary] || 0)) primary = lv;
+  }
+  const pct = Math.round(counts[primary] / total * 100);
+  const bars = SAT_LEVELS.map(lv => {
+    const w = Math.max(4, Math.round(counts[lv] / total * 100));
+    const c = lv === '很满意' ? '#34c759' : lv === '满意' ? '#0071e3' : lv === '一般' ? '#ff9500' : '#ff3b30';
+    return `<div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-bottom:2px;">
+      <span style="width:48px;text-align:right;color:var(--text2);">${SAT_EMOJIS[lv]} ${lv}</span>
+      <div style="flex:1;height:14px;background:#f0f0f0;border-radius:7px;overflow:hidden;">
+        <div style="height:100%;width:${w}%;background:${c};border-radius:7px;transition:width 0.5s;"></div>
+      </div>
+      <span style="width:24px;text-align:left;font-weight:600;color:var(--text);">${counts[lv]}</span>
+    </div>`;
+  }).join('');
+  const emoji = SAT_EMOJIS[primary] || '';
+  const color = primary === '很满意' ? '#34c759' : primary === '满意' ? '#0071e3' : primary === '一般' ? '#ff9500' : '#ff3b30';
+  return `<div style="margin-bottom:12px;padding:10px 14px;background:#f9f9fb;border-radius:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:12px;font-weight:600;">😊 客户满意度</span>
+      <span style="font-size:13px;font-weight:700;color:${color};">${emoji} ${primary} ${pct}%</span>
+    </div>
+    ${bars}
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;text-align:right;">共 ${total} 轮评价</div>
+  </div>`;
+}
+
+function clearAllData() {
+  if (!confirm('确定清除所有本地数据吗？（训练记录、设置等将全部清除）')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+function closeModal() {
+  document.getElementById('modalContainer').innerHTML = '';
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnHistory').disabled = false;
+  document.getElementById('emotionBar').style.display = 'none';
+  if (state.continuousTotal > 0) {
+    state.continuousTotal = 0;
+    state.continuousRound = 0;
+  }
+}
+
+function genReview(s) {
+  const items = [];
+  const all = state.msgs.filter(m => m.role === 'agent').map(m => m.text).join('');
+  const hl = [];
+  if (/确实让您|理解您/.test(all)) hl.push('情绪词开头到位，接住了客户情绪');
+  if (/这事儿换谁|换做是我/.test(all)) hl.push('用了「换谁」句式建立共情');
+  if (/帮您申请|帮您争取/.test(all)) hl.push('主动使用「帮您申请」体现服务意识');
+  if (/您看行吗|您看成吗|可以吗/.test(all)) hl.push('结尾有引导确认动作');
+  if (/运费我们出|我们承担运费/.test(all)) hl.push('主动告知运费承担方，业务信息清晰');
+  if (/①|②|③/.test(all)) hl.push('给出了多个方案供客户选择');
+  if (/是我们的问题|给您道歉/.test(all)) hl.push('主动承认责任不推诿');
+  if (hl.length === 0) hl.push('基础功扎实，可以尝试更多共情表达✨');
+  for (const h of hl) items.push(`<div class="modal-review-item good"><span class="label">✅</span> ${h}</div>`);
+
+  // 满意度分析
+  const sats = state.satisfactions;
+  if (sats && sats.length > 0) {
+    const satCounts = { '很满意': 0, '满意': 0, '一般': 0, '不满意': 0 };
+    for (const x of sats) if (satCounts[x] !== undefined) satCounts[x]++;
+    if (satCounts['不满意'] > 0) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> 出现 ${satCounts['不满意']} 次「不满意」评价，注意提升共情和解决问题能力</div>`);
+    if (satCounts['一般'] > 0) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> 有 ${satCounts['一般']} 轮评价为「一般」，还有提升空间</div>`);
+    if (satCounts['很满意'] > 0) items.push(`<div class="modal-review-item good"><span class="label">✅</span> 获得 ${satCounts['很满意']} 次「很满意」评价，保持出色表现 💪</div>`);
+    const satScore = satCounts['很满意'] * 3 + satCounts['满意'] * 2 + satCounts['一般'] * 1;
+    const satMax = sats.length * 3;
+    if (sats.length >= 3 && satScore / satMax < 0.5) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> 整体满意度偏低，建议复盘各轮评分较低的维度针对性改进</div>`);
+  }
+
+  const im = [];
+  if (!/确实让您|理解您/.test(all)) im.push('开场缺少情绪词，建议用「确实让您[情绪]+了」开头');
+  if (!/您看行吗|您看成吗|可以吗/.test(all)) im.push('结尾缺少引导确认，用户满意项可能不达标');
+  if (!/这事儿换谁|换做是我/.test(all)) im.push('可以增加「换谁/换做是我」句式强化共情');
+  if (/担心/.test(all) && !/生气|着急|失望/.test(all)) im.push('注意「担心」适合食品变质/过敏场景，物流破损建议用「生气/失望/着急」');
+  if (!/帮您申请|帮您争取/.test(all)) im.push('建议多用「帮您申请/争取」体现站在客户一边');
+  if (s.userSatisfied < 6) im.push('用户满意项偏低，注意每轮结尾问一句「您看行吗」引导确认');
+  if (s.emotionMgmt < 6) im.push('情绪管理项偏低，注意先共情再接方案，不要跳过情绪');
+  if (!/(我们的问题|给您道歉)/.test(all)) im.push('注意先承认责任再给方案，不要辩解');
+  if (im.length === 0) im.push('整体表现优秀，继续保持！🎉');
+  while (im.length > 4) im.pop();
+  for (const i of im) items.push(`<div class="modal-review-item improve"><span class="label">🔧</span> ${i}</div>`);
+  items.push(`<div class="modal-review-item tip"><span class="label">🏷️</span> ${state.cat} · 共 ${state.round} 回合</div>`);
+  return items.join('');
+}
+
+// ============ AI 复盘生成 ============
+
+function buildFullHistoryText() {
+  return state.msgs.map(m => {
+    const role = m.role === 'customer' ? '客户' : '客服';
+    return role + '：' + m.text;
+  }).join('\n');
+}
+
+async function asyncGenReview(scores) {
+  const fullHistory = buildFullHistoryText();
+  const satCounts = { '很满意': 0, '满意': 0, '一般': 0, '不满意': 0 };
+  for (const s of state.satisfactions) if (satCounts[s] !== undefined) satCounts[s]++;
+
+  const prompt = `请对以下客服培训对话进行整体复盘，输出结构化的复盘报告。
+
+【场景分类】${state.cat}
+【客户原始问题】${state.scene}
+【场景背景】${state.scenarioDetail || '无'}
+
+【对话记录】
+${fullHistory}
+
+【7维最终评分】
+${DIM_NAMES.map(d => `${d.n}：${scores[d.k]}分（阈值${THRESHOLDS[d.k]}分）`).join('\n')}
+
+【每轮满意度分布】
+${SAT_LEVELS.map(l => `${l}：${satCounts[l]}次`).join(' | ')}
+
+当前训练难度：${state.difficulty === 'easy' ? '简单模式——复盘语气鼓励为主，重点肯定做得好的地方' : state.difficulty === 'hard' ? '困难模式——复盘语气严格，重点挑刺和改进建议' : state.difficulty === 'extreme' ? '特难模式——复盘语气苛刻，每条回复严格审查，指出所有问题' : '中等模式——客观平衡'}
+
+请按以下格式输出复盘，不要多余内容：
+
+【总体评价】一段综合评语（100字以内）
+
+【亮点】2-3条做得好的地方，每条一句话
+
+【改进点】2-3条需要提升的地方，每条一句话
+
+【话术优化建议】针对客服回复中的具体问题，给出2-3条优化后的话术示例。每条格式：原始问题 → 优化话术`;
+
+  try {
+    const res = await callDeepSeek('评分评估', prompt, 0.4, {maxTokens:600});
+    return res.content;
+  } catch (e) {
+    console.warn('AI 复盘失败，使用本地复盘：', e.message);
+    return genReview(scores);
+  }
+}
+
+// ============ 历史记录 ============
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('csHistory') || '[]'); } catch { return []; }
+}
+
+function saveHistoryData(data) {
+  localStorage.setItem('csHistory', JSON.stringify(data));
+}
+
+function saveToHistory(scores) {
+  const history = getHistory();
+  // 获取每个客服回合的详细评分（按 agent 消息顺序对应 acc 数组）
+  const agentMsgs = state.msgs.filter(m => m.role === 'agent');
+  const detailScores = agentMsgs.map((m, i) => {
+    const entry = {};
+    for (const d of DIM_NAMES) {
+      entry[d.k] = state.acc[d.k][i] || 0;
+    }
+    return entry;
+  });
+
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+    scene: state.scene,
+    cat: state.cat,
+    round: state.round,
+    messages: JSON.parse(JSON.stringify(state.msgs)),
+    scores: JSON.parse(JSON.stringify(scores)),
+    detailScores: detailScores,
+    satisfactions: JSON.parse(JSON.stringify(state.satisfactions))
+  };
+  history.unshift(entry);
+  if (history.length > 50) history.length = 50; // 最多保留50条
+  saveHistoryData(history);
+}
+
+// ============ 设置弹窗 ============
+
+let mimoModelsCache = [];
+
+async function fetchMimoModels() {
+  if (!AI_CONFIG.apiKey) return;
+  try {
+    const res = await fetch('https://api.xiaomimimo.com/v1/models', {
+      headers: { 'Authorization': 'Bearer ' + AI_CONFIG.apiKey }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    mimoModelsCache = (data.data || []).map(m => ({ id: m.id, name: m.id }));
+  } catch (e) { mimoModelsCache = []; }
+}
+
+function showSettings() {
+  const checked = AI_CONFIG.aiMode ? 'checked' : '';
+  const isDeep = AI_CONFIG.provider === 'deepseek';
+  const dsModels = [
+    { v: 'deepseek-v4-flash', l: '🆕 DeepSeek V4 Flash（快速）' },
+    { v: 'deepseek-v4-pro', l: '🆕 DeepSeek V4 Pro（增强推理）' },
+    { v: 'deepseek-chat', l: '⚙️ V3 Chat（即将弃用）' },
+    { v: 'deepseek-reasoner', l: '⚙️ V3 Reasoner（即将弃用）' }
+  ];
+  const dsOpts = dsModels.map(m =>
+    `<option value="${m.v}"${AI_CONFIG.model === m.v ? ' selected' : ''}>${m.l}</option>`
+  ).join('');
+
+  const mimoOpts = mimoModelsCache.length > 0
+    ? mimoModelsCache.map(m => `<option value="${m.id}"${AI_CONFIG.mimoModel === m.id ? ' selected' : ''}>${m.id}</option>`).join('')
+    : '<option value="">暂无模型数据，请检查API Key</option>';
+
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>⚙️ 设置</h2>
+
+        <div class="setting-mode">
+          <input type="radio" name="aiMode" id="modeOn" value="on" ${checked}
+            onchange="AI_CONFIG.aiMode=true;updateAiStatus();">
+          <label for="modeOn">🤖 AI 大模型模式</label>
+          <input type="radio" name="aiMode" id="modeOff" value="off" ${!checked ? 'checked' : ''}
+            onchange="AI_CONFIG.aiMode=false;updateAiStatus();">
+          <label for="modeOff">📋 本地规则模式</label>
+        </div>
+
+        <div class="setting-group">
+          <label for="sProvider">服务商</label>
+          <select id="sProvider" onchange="toggleProvider()">
+            <option value="deepseek" ${isDeep ? 'selected' : ''}>DeepSeek</option>
+            <option value="mimo" ${!isDeep ? 'selected' : ''}>Mimo 小米</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label for="sApiKey">API Key</label>
+          <input type="password" id="sApiKey" value="${AI_CONFIG.apiKey}" placeholder="sk-…" spellcheck="false">
+          <div class="hint" id="apiKeyHint">从 ${isDeep ? '<a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a>' : 'Mimo 平台'} 获取</div>
+        </div>
+
+        <div class="setting-group" id="modelGroup" style="display:${isDeep ? 'block' : 'none'};">
+          <label for="sModel">DeepSeek 模型</label>
+          <select id="sModel">${dsOpts}</select>
+        </div>
+
+        <div class="setting-group" id="mimoModelGroup" style="display:${isDeep ? 'none' : 'block'};">
+          <label for="sMimoModel">Mimo 模型</label>
+          <select id="sMimoModel">${mimoOpts}</select>
+          <div class="hint">自动读取 Mimo 可用模型列表${mimoModelsCache.length === 0 ? '，保存后再次打开设置即可加载' : ''}</div>
+        </div>
+
+        <div style="font-size:12px;color:var(--text2);background:#f9f9fb;padding:10px 14px;border-radius:10px;margin-bottom:4px;line-height:1.6;">
+          <strong>💡 AI 模式说明</strong><br>
+          · 客户回复由 AI 根据场景+对话历史动态生成，更真实自然<br>
+          · 评分由 AI 按 7 维标准智能评估，而非关键词匹配<br>
+          · API 调用失败时自动降级为本地模式，训练不中断
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeModal()">取消</button>
+          <button class="btn-primary" onclick="saveSettings()">保存设置</button>
+        </div>
+      </div>
+    </div>`;
+  // 非 DeepSeek 时自动拉取模型列表
+  if (!isDeep && AI_CONFIG.apiKey) fetchMimoModels().then(() => {
+    const sel = document.getElementById('sMimoModel');
+    if (sel && mimoModelsCache.length > 0) {
+      sel.innerHTML = mimoModelsCache.map(m => `<option value="${m.id}"${AI_CONFIG.mimoModel === m.id ? ' selected' : ''}>${m.id}</option>`).join('');
+    }
+  });
+}
+
+async function toggleProvider() {
+  const p = document.getElementById('sProvider').value;
+  const isD = p === 'deepseek';
+  document.getElementById('modelGroup').style.display = isD ? 'block' : 'none';
+  document.getElementById('mimoModelGroup').style.display = isD ? 'none' : 'block';
+  const hint = document.getElementById('apiKeyHint');
+  hint.innerHTML = isD ? '从 <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a> 获取' : '从 Mimo 平台获取 API Key';
+  if (!isD && AI_CONFIG.apiKey) {
+    await fetchMimoModels();
+    const sel = document.getElementById('sMimoModel');
+    if (sel) {
+      sel.innerHTML = mimoModelsCache.length > 0
+        ? mimoModelsCache.map(m => `<option value="${m.id}">${m.id}</option>`).join('')
+        : '<option value="">暂无模型数据</option>';
+    }
+  }
+}
+
+function saveSettings() {
+  const key = document.getElementById('sApiKey').value.trim();
+  const provider = document.getElementById('sProvider').value;
+  const model = provider === 'deepseek' ? document.getElementById('sModel').value : AI_CONFIG.model;
+  const mimoEl = document.getElementById('sMimoModel');
+  const mimoModel = provider === 'mimo' ? (mimoEl ? mimoEl.value : AI_CONFIG.mimoModel) : AI_CONFIG.mimoModel;
+  AI_CONFIG.apiKey = key;
+  AI_CONFIG.provider = provider;
+  AI_CONFIG.model = model;
+  AI_CONFIG.mimoModel = mimoModel;
+  saveAiConfig();
+  updateAiStatus();
+  closeModal();
+  if (key) setTimeout(fetchBalance, 500);
+}
+
+// 页面加载时更新状态 + 获取余额
+document.addEventListener('DOMContentLoaded', function() {
+  updateAiStatus();
+  if (AI_CONFIG.apiKey) setTimeout(fetchBalance, 1000);
+  if (AI_CONFIG.provider === 'mimo' && AI_CONFIG.apiKey) setTimeout(fetchMimoModels, 2000);
+});
+
+function showHistory() {
+  const history = getHistory();
+  let listHtml = '';
+  if (history.length === 0) {
+    listHtml = '<div class="history-empty">暂无历史记录，完成训练后会自动保存 📝</div>';
+  } else {
+    for (let i = 0; i < history.length; i++) {
+      const h = history[i];
+      const allPass = Object.keys(h.scores).every(k => h.scores[k] >= THRESHOLDS[k]);
+      listHtml += `
+        <div class="history-list-item" onclick="showHistoryDetail(${i})">
+          <div class="hli-left">
+            <div class="hli-cat">${h.cat} · ${h.date}</div>
+            <div class="hli-scene">${h.scene}</div>
+            <div class="hli-meta"><span>🔄 ${h.round} 回合</span></div>
+          </div>
+          <div class="hli-badge ${allPass ? 'pass' : 'fail'}">${allPass ? '✅ 通过' : '❌ 未过'}</div>
+        </div>`;
+    }
+  }
+
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>📋 历史训练记录</h2>
+        <div class="history-header-bar">
+          <span style="font-size:13px;color:var(--text2);">共 ${history.length} 条记录</span>
+          ${history.length > 0 ? '<button class="btn-clear-history" onclick="clearHistory(event)">清空全部</button>' : ''}
+        </div>
+        ${listHtml}
+        <div class="modal-actions" style="margin-top:12px;">
+          <button class="btn-secondary" onclick="closeModal()" style="flex:1;">关闭</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildHistorySatSummary(h) {
+  const sats = h.satisfactions;
+  if (!sats || sats.length === 0) return '';
+  const counts = { '很满意': 0, '满意': 0, '一般': 0, '不满意': 0 };
+  for (const s of sats) if (counts[s] !== undefined) counts[s]++;
+  const total = sats.length;
+  let primary = '一般';
+  for (const lv of SAT_LEVELS) if (counts[lv] > (counts[primary] || 0)) primary = lv;
+  const pct = Math.round(counts[primary] / total * 100);
+  const bars = SAT_LEVELS.map(lv => {
+    const w = Math.max(4, Math.round(counts[lv] / total * 100));
+    const c = lv === '很满意' ? '#34c759' : lv === '满意' ? '#0071e3' : lv === '一般' ? '#ff9500' : '#ff3b30';
+    return `<div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-bottom:2px;">
+      <span style="width:48px;text-align:right;color:var(--text2);">${SAT_EMOJIS[lv]} ${lv}</span>
+      <div style="flex:1;height:14px;background:#f0f0f0;border-radius:7px;overflow:hidden;">
+        <div style="height:100%;width:${w}%;background:${c};border-radius:7px;"></div>
+      </div>
+      <span style="width:24px;text-align:left;font-weight:600;">${counts[lv]}</span>
+    </div>`;
+  }).join('');
+  const emoji = SAT_EMOJIS[primary] || '';
+  const color = primary === '很满意' ? '#34c759' : primary === '满意' ? '#0071e3' : primary === '一般' ? '#ff9500' : '#ff3b30';
+  return `<div style="margin-bottom:12px;padding:10px 14px;background:#f9f9fb;border-radius:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:12px;font-weight:600;">😊 客户满意度</span>
+      <span style="font-size:13px;font-weight:700;color:${color};">${emoji} ${primary} ${pct}%</span>
+    </div>
+    ${bars}
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;text-align:right;">共 ${total} 轮评价</div>
+  </div>`;
+}
+
+function showHistoryDetail(index) {
+  const history = getHistory();
+  const h = history[index];
+  if (!h) return;
+
+  // 评分网格
+  const allPass = DIM_NAMES.every(d => (h.scores[d.k] || 0) >= THRESHOLDS[d.k]);
+  let scoreHtml = '';
+  for (const d of DIM_NAMES) {
+    const v = h.scores[d.k] || 0; const t = THRESHOLDS[d.k]; const p = v >= t;
+    scoreHtml += `<div class="modal-score-item ${p ? 'pass' : 'fail'}">
+      <div><div class="name">${d.n}</div><div class="threshold">阈值 ≥${t}</div></div>
+      <div class="val ${p ? 'pass' : 'fail'}">${v}<span style="font-size:11px;font-weight:400;color:#999;">/${t}</span></div>
+    </div>`;
+  }
+
+  // 对话回放（含评分）
+  let chatHtml = '';
+  let msgIdx = 0;
+  let agentIdx = 0;
+  for (const msg of h.messages) {
+    if (msg.role === 'customer') {
+      chatHtml += `<div class="detail-msg customer"><div class="dm-label">客户</div><div class="dm-bubble">${msg.text}</div></div>`;
+    } else {
+      let scoreStr = '';
+      if (h.detailScores && h.detailScores[agentIdx]) {
+        const ds = h.detailScores[agentIdx];
+        scoreStr = '<div class="dm-scores">';
+        for (const d of DIM_NAMES) {
+          const v = ds[d.k] || 0; const t = THRESHOLDS[d.k]; const p = v >= t;
+          scoreStr += `<span class="dm-dim ${p ? 'pass' : 'fail'}">${d.n}${v}</span>`;
+        }
+        scoreStr += '</div>';
+      }
+      const sat = (h.satisfactions && h.satisfactions[agentIdx]) || '';
+      const satEmoji = SAT_EMOJIS[sat] || '';
+      const satBadge = sat ? `<span style="font-size:10px;margin-left:4px;font-weight:600;">${satEmoji} ${sat}</span>` : '';
+      chatHtml += `<div class="detail-msg agent"><div class="dm-label">我的回复${satBadge}</div><div class="dm-bubble">${msg.text}</div>${scoreStr}</div>`;
+      agentIdx++;
+    }
+    msgIdx++;
+  }
+
+  // 从 messages 重建分析（复用 genReview 逻辑）
+  const allAgentText = h.messages.filter(m => m.role === 'agent').map(m => m.text).join('');
+  const reviewItems = [];
+  const hl = [];
+  if (/确实让您|理解您/.test(allAgentText)) hl.push('情绪词开头到位，接住了客户情绪');
+  if (/这事儿换谁|换做是我/.test(allAgentText)) hl.push('用了「换谁」句式建立共情');
+  if (/帮您申请|帮您争取/.test(allAgentText)) hl.push('主动使用「帮您申请」体现服务意识');
+  if (/您看行吗|您看成吗|可以吗/.test(allAgentText)) hl.push('结尾有引导确认动作');
+  if (/运费我们出|我们承担运费/.test(allAgentText)) hl.push('主动告知运费承担方，业务信息清晰');
+  if (/①|②|③/.test(allAgentText)) hl.push('给出了多个方案供客户选择');
+  if (/是我们的问题|给您道歉/.test(allAgentText)) hl.push('主动承认责任不推诿');
+  if (hl.length === 0) hl.push('基础功扎实，可以尝试更多共情表达✨');
+  for (const x of hl) reviewItems.push(`<div class="detail-review-item good"><span class="label">✅</span> ${x}</div>`);
+
+  const im = [];
+  if (!/确实让您|理解您/.test(allAgentText)) im.push('开场缺少情绪词，建议用「确实让您[情绪]+了」开头');
+  if (!/您看行吗|您看成吗|可以吗/.test(allAgentText)) im.push('结尾缺少引导确认，用户满意项可能不达标');
+  if (!/这事儿换谁|换做是我/.test(allAgentText)) im.push('可以增加「换谁/换做是我」句式强化共情');
+  if (!/帮您申请|帮您争取/.test(allAgentText)) im.push('建议多用「帮您申请/争取」体现站在客户一边');
+  const us = h.scores.userSatisfied || 0;
+  if (us < 6) im.push('用户满意项偏低，注意每轮结尾问一句「您看行吗」引导确认');
+  const em = h.scores.emotionMgmt || 0;
+  if (em < 6) im.push('情绪管理项偏低，注意先共情再接方案，不要跳过情绪');
+  if (!/(我们的问题|给您道歉)/.test(allAgentText)) im.push('注意先承认责任再给方案，不要辩解');
+  if (im.length === 0) im.push('整体表现优秀，继续保持！🎉');
+  while (im.length > 4) im.pop();
+  for (const x of im) reviewItems.push(`<div class="detail-review-item improve"><span class="label">🔧</span> ${x}</div>`);
+  reviewItems.push(`<div class="detail-review-item tip"><span class="label">🏷️</span> ${h.cat} · 共 ${h.round} 回合</div>`);
+
+  const ref = REFERENCE_BY_CAT[h.cat] || '';
+
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="max-width:560px;">
+        <h2>📖 历史详情</h2>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+          <div>📌 场景：${h.scene}</div>
+          <div>🏷️ ${h.cat} · 🕐 ${h.date} · 🔄 ${h.round} 回合</div>
+        </div>
+
+        <div class="result-badge ${allPass ? 'pass' : 'fail'}" style="margin-bottom:12px;">
+          ${allPass ? '✅ 命中好服务' : '❌ 未命中好服务'}
+        </div>
+
+        <div class="modal-score-grid">${scoreHtml}</div>
+
+        <!-- 历史满意度 -->
+        ${buildHistorySatSummary(h)}
+
+        <h3 style="font-size:13px;font-weight:600;margin-bottom:6px;">💬 对话回放</h3>
+        <div class="detail-chat">${chatHtml}</div>
+
+        <h3 style="font-size:13px;font-weight:600;margin-bottom:6px;">📝 复盘总结</h3>
+        <div class="detail-review">${reviewItems.join('')}</div>
+        ${ref ? `<div class="detail-ref"><div class="ref-label">💡 ${h.cat}场景参考话术</div>${ref}</div>` : ''}
+
+        <div class="modal-actions" style="margin-top:16px;">
+          <button class="btn-secondary" onclick="showHistory()" style="flex:1;">返回列表</button>
+          <button class="btn-primary" onclick="closeModal()" style="flex:1;">关闭</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function clearHistory(e) {
+  if (e) e.stopPropagation();
+  if (!confirm('确定清空所有历史记录吗？此操作不可恢复。')) return;
+  saveHistoryData([]);
+  showHistory();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    const a = document.activeElement;
+    if (a && a.id === 'agentInput' && !document.getElementById('btnSend').disabled) { e.preventDefault(); sendReply(); }
+  }
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
